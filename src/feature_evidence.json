@@ -1,0 +1,36 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-add-an-android-apk-packaging-option-for-the-existing-pwa-so-the-user-can-download-and-install-the-app-on-an-android-device-wrap-the-deployed-web-app-into-an-apk-and-provide-a-release-artifact",
+      "featureTitle": "Add an Android APK packaging option for the existing PWA so the user can download and install the app on an Android device (wrap the deployed web app into an APK and provide a release artifact).",
+      "files": [
+        "frontend/android/.gitignore",
+        "frontend/android/README.md",
+        "frontend/android/app/build.gradle",
+        "frontend/android/app/src/main/AndroidManifest.xml",
+        "frontend/android/app/src/main/java/com/frontline/wrapper/MainActivity.kt",
+        "frontend/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+        "frontend/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+        "frontend/android/app/src/main/res/values/strings.xml",
+        "frontend/android/app/src/main/res/values/styles.xml",
+        "frontend/android/build.gradle",
+        "frontend/android/gradle.properties",
+        "frontend/android/gradle/wrapper/gradle-wrapper.properties",
+        "frontend/android/settings.gradle"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-24"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

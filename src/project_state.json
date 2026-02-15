@@ -1,0 +1,305 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 13,
+  "summary": "Frontline Distributors: Kotlin Android app for inventory, billing, customers, and credit management with Owner/Salesman roles and full online/offline support via Firebase (offline persistence), using MVVM, RecyclerView, and ViewBinding with a clean minimal UI; includes billing print/export and basic sales/profit/expense reporting with sales summaries. Supports products tracked/sold in pieces or cases, including pieces-per-case conversion for stock and billing.",
+  "architectural_notes": [
+    "Android app in Kotlin using MVVM architecture",
+    "Firebase Firestore or Realtime Database with offline persistence enabled (offline-first sync)",
+    "Use RecyclerView for list screens (products, customers, bills, credits)",
+    "Use ViewBinding for UI wiring",
+    "Clean minimal business UI; code should be beginner-friendly with comments",
+    "Extend Product data model to include unitOfMeasure (PIECE/CASE) and piecesPerCase for conversions; ensure inventory and billing calculations consistently convert to a base unit for stock updates and reporting."
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-implement-a-simple-username-password-authentication-system-with-two-roles-owner-salesman-including-session-handling-and-role-based-authorization-for-backend-operations",
+      "title": "Implement a simple username/password authentication system with two roles (Owner, Salesman), including session handling and role-based authorization for backend operations.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-the-frontend-application-screens-and-navigation-login-dashboard-products-inventory-billing-create-bill-customers-and-credits-using-a-clean-minimal-business-ui-and-list-based-views",
+      "title": "Build the frontend application screens and navigation: Login, Dashboard, Products/Inventory, Billing (create bill), Customers, and Credits, using a clean minimal business UI and list-based views.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-offline-first-behavior-on-the-frontend-allow-viewing-and-creating-updating-records-while-offline-persist-pending-changes-locally-and-synchronize-with-the-backend-when-connectivity-returns-including-a-visible-sync-status",
+      "title": "Add offline-first behavior on the frontend: allow viewing and creating/updating records while offline, persist pending changes locally, and synchronize with the backend when connectivity returns, including a visible sync status.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-a-coherent-visual-theme-across-the-app-colors-typography-spacing-and-components-suitable-for-a-business-inventory-billing-tool-avoiding-a-blue-purple-dominant-palette",
+      "title": "Apply a coherent visual theme across the app (colors, typography, spacing, and components) suitable for a business inventory/billing tool, avoiding a blue/purple-dominant palette.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-billing-screen-to-let-users-configure-gst-when-creating-a-bill-at-minimum-a-toggle-to-apply-gst-and-a-selectable-gst-rate-and-reflect-gst-in-the-totals-breakdown-and-final-total",
+      "title": "Update the Billing screen to let users configure GST when creating a bill (at minimum: a toggle to apply GST and a selectable GST rate), and reflect GST in the totals breakdown and final total.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-recent-bills-list-calculation-display-on-the-billing-screen-to-use-the-stored-bill-totals-that-include-gst-when-gst-was-applied-so-the-displayed-amount-matches-what-was-charged",
+      "title": "Update the Recent Bills list calculation/display on the Billing screen to use the stored bill totals that include GST (when GST was applied) so the displayed amount matches what was charged.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-customer-bill-invoice-print-option-from-the-billing-screen-so-a-user-can-print-a-created-bill-using-the-browser-print-flow",
+      "title": "Add a customer bill (invoice) print option from the Billing screen so a user can print a created bill using the browser print flow.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-the-data-model-to-support-profit-reporting-by-storing-per-product-cost-information-and-expose-it-through-existing-product-create-update-read-apis",
+      "title": "Extend the data model to support profit reporting by storing per-product cost information, and expose it through existing product create/update/read APIs.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-miscellaneous-expenses-tracking-e-g-diesel-maintenance-salary-food-including-creating-listing-and-deleting-expense-records-with-offline-first-support-consistent-with-the-existing-queue-sync-approach",
+      "title": "Implement miscellaneous expenses tracking (e.g., diesel, maintenance, salary, food) including creating, listing, and deleting expense records, with offline-first support consistent with the existing queue/sync approach.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-reporting-views-that-show-1-daily-sales-totals-2-profit-after-selling-and-3-sales-summary-computed-from-stored-bills-and-product-cost-where-available-and-recorded-expenses",
+      "title": "Add reporting views that show (1) daily sales totals, (2) profit after selling, and (3) sales summary, computed from stored bills (and product cost where available) and recorded expenses.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-app-navigation-types-to-support-the-new-reporting-expenses-ui-without-modifying-any-immutable-frontend-paths-and-ensure-all-user-facing-text-for-the-new-features-is-in-english",
+      "title": "Update app navigation/types to support the new reporting/expenses UI without modifying any immutable frontend paths, and ensure all user-facing text for the new features is in English.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-product-add-edit-ui-to-support-piece-case-configuration-and-stock-entry-allow-the-user-to-set-piecespercase-and-allow-stock-quantity-entry-to-be-specified-as-either-pieces-or-cases-converted-into-stored-piece-inventory",
+      "title": "Update the Product add/edit UI to support piece/case configuration and stock entry: allow the user to set `piecesPerCase`, and allow stock quantity entry to be specified as either Pieces or Cases (converted into stored piece inventory).",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-billing-screen-to-let-the-user-add-line-items-in-either-pieces-or-cases-per-selected-product-using-the-product-s-piecespercase-to-convert-to-pieces-for-stock-validation-and-bill-payload-generation-while-showing-the-selected-unit-in-the-line-ui",
+      "title": "Update the Billing screen to let the user add line items in either Pieces or Cases per selected product, using the product’s `piecesPerCase` to convert to pieces for stock validation and bill payload generation, while showing the selected unit in the line UI.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-progressive-web-app-pwa-support-so-the-existing-react-app-can-be-installed-on-android-devices-via-add-to-home-screen-and-launches-as-a-standalone-app",
+      "title": "Implement Progressive Web App (PWA) support so the existing React app can be installed on Android devices via “Add to Home screen” and launches as a standalone app.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-required-pwa-metadata-and-install-assets-create-and-link-a-web-app-manifest-set-theme-background-colors-consistent-with-the-current-palette-and-include-app-icons-including-a-maskable-icon-served-as-static-files",
+      "title": "Add required PWA metadata and install assets: create and link a web app manifest, set theme/background colors consistent with the current palette, and include app icons (including a maskable icon) served as static files.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-service-worker-to-support-offline-app-shell-loading-on-android-cache-static-assets-without-breaking-the-existing-offline-queue-sync-behavior-for-data-mutations",
+      "title": "Add a service worker to support offline app-shell loading on Android (cache static assets) without breaking the existing offline queue/sync behavior for data mutations.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-in-app-install-prompt-entry-point-for-supported-browsers-android-chrome-so-users-can-trigger-installation-from-within-the-ui-when-the-pwa-is-installable",
+      "title": "Add an in-app install prompt entry point for supported browsers (Android Chrome) so users can trigger installation from within the UI when the PWA is installable.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-android-apk-packaging-option-for-the-existing-pwa-so-the-user-can-download-and-install-the-app-on-an-android-device-wrap-the-deployed-web-app-into-an-apk-and-provide-a-release-artifact",
+      "title": "Add an Android APK packaging option for the existing PWA so the user can download and install the app on an Android device (wrap the deployed web app into an APK and provide a release artifact).",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Implement simple username/password login (no OTP/email) with roles Owner and Salesman; store users in Firebase or local DB",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Create Dashboard screen for the app",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Inventory module: add/edit/delete products with fields (name, price, stock quantity) and Firebase sync with offline support",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Billing module: create bills by selecting products and quantities, auto-calculate total, reduce stock, save and sync (offline-first)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Customers module: store customer details and manage customer list",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Credits module: track customer credit balances (pending/paid) and sync with offline support",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Set up Android project architecture and UI foundations: MVVM, RecyclerView lists, ViewBinding, clean minimal business UI, beginner-friendly commented code",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Create backend data models and APIs for Products/Inventory, Customers, Bills, and Credits, supporting create/read/update/delete workflows and consistent IDs/timestamps needed for sync.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Add GST options in Billing module (configure/apply GST to bills and reflect in totals)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Extend the Bill data model in the backend to support GST options on bills, and persist those GST settings/amounts as part of each Bill record.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Add a conditional canister state migration to ensure existing persisted Bill records are upgraded to the new Bill schema with sensible default GST values (e.g., GST not applied, GST rate 0).",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Add option to print/share/export a customer bill (invoice) from Billing module",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Add daily sales tracking/report (view sales totals per day)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Add profit reporting (profit after selling) based on sales and cost data",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Add miscellaneous expenses tracking (diesel, maintenance, salary, food, etc.) and include in summaries",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Add sales summary report screen (overall summary of sales, optionally including profit and expenses)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Support products sold/stocked in Pieces or Cases: add per-product unit type and pieces-per-case; allow stock entry and billing in piece/case with correct conversion and totals/stock updates (offline-first)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Extend the Product data model to store packaging information required for piece/case conversion by adding a new field `piecesPerCase` (Nat) and treat `availableInventory` as the number of pieces available.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Add a conditional canister state migration to backfill `piecesPerCase` for existing persisted products (default to 1) so upgrades do not trap when decoding older Product records.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Update bill creation to reduce product inventory in pieces when a bill is created by subtracting the total number of sold pieces per product from `availableInventory`, and reject bill creation when any product would go negative.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Provide a downloadable Android APK build for installation on an Android device",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Frontline Distributors",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

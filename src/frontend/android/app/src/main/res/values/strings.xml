@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Frontline Distributors</string>
+    
+    <!-- 
+        Configure your deployed PWA URL here.
+        Replace this with your actual deployed URL from the Internet Computer.
+        Example: https://your-canister-id.ic0.app
+    -->
+    <string name="pwa_url">https://your-canister-id.ic0.app</string>
+    
+    <!-- Error messages -->
+    <string name="error_no_internet">No internet connection. Please check your network settings.</string>
+    <string name="error_loading">Failed to load application. Please try again.</string>
+</resources>

@@ -1,0 +1,71 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-15T11:44:36.411Z",
+  "summary": "Diff adds a new `frontend/android/` Android wrapper project (Gradle + Kotlin WebView) intended to load a configured deployed PWA URL, and adds an Android-specific README stub. However, the diff summary does not provide complete evidence that the README documents APK artifact location/naming and full build/install steps, and there are unrequested backend changes plus broad Android permissions/features not stated in the build request.",
+  "missing_requirements": [
+    {
+      "id": "REQ-24",
+      "requirement": "A downloadable APK artifact is produced by the build (debug or release), with clear output location and naming documented.",
+      "reason": "An Android project is added, but the diff summary does not show any explicit configuration for APK output naming, nor complete README documentation of the artifact path/name. The added `frontend/android/README.md` is truncated mid-instructions, so the required documentation cannot be verified from the provided evidence.",
+      "evidence": [
+        "frontend/android/README.md",
+        "frontend/android/app/build.gradle"
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "requirement": "A short English README section is added explaining how to build the APK locally (prerequisites, commands) and how to install it on an Android device.",
+      "reason": "A README is added, but it is truncated in the diff summary before showing build commands and any installation steps, so this acceptance criterion cannot be confirmed from the provided diff summary.",
+      "evidence": [
+        "frontend/android/README.md"
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "requirement": "A buildable Android project (or build pipeline) is added to the repo that packages the existing deployed PWA URL into an installable APK.",
+      "reason": "While Gradle configuration and source files are added, the diff summary does not show Gradle wrapper scripts (`gradlew`, `gradlew.bat`) even though the README claims wrapper scripts are included. Without those, the \"using Gradle Wrapper\" path may not be buildable as documented (cannot be confirmed from evidence shown).",
+      "evidence": [
+        "frontend/android/gradle/wrapper/gradle-wrapper.properties",
+        "frontend/android/README.md"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Backend Motoko canister logic changes in `backend/main.mo` unrelated to Android APK packaging.",
+      "reason": "BuildRequest is solely about adding an Android APK packaging option for the existing deployed PWA and explicitly lists \"Non-goals: Implementing new app features beyond APK packaging\". The diff includes modifications to backend code, which are not requested for APK packaging.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Android wrapper requests broad device permissions/features (CAMERA, storage/media, fine/coarse location) and deep-link intent filter.",
+      "reason": "REQ-24 only asks to wrap the deployed PWA into an APK that launches fullscreen and loads the same deployed app; it does not request adding extra permissions/features. These may be unnecessary/unrequested scope expansion based on the build request.",
+      "evidence": [
+        "frontend/android/app/src/main/AndroidManifest.xml"
+      ]
+    }
+  ],
+  "confidence": 0.62,
+  "changed_files": [
+    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/android/.gitignore",
+    "frontend/android/README.md",
+    "frontend/android/app/build.gradle",
+    "frontend/android/app/proguard-rules.pro",
+    "frontend/android/app/src/main/AndroidManifest.xml",
+    "frontend/android/app/src/main/java/com/frontline/wrapper/MainActivity.kt",
+    "frontend/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+    "frontend/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+    "frontend/android/app/src/main/res/values/colors.xml",
+    "frontend/android/app/src/main/res/values/strings.xml",
+    "frontend/android/app/src/main/res/values/styles.xml",
+    "frontend/android/build.gradle",
+    "frontend/android/gradle.properties",
+    "frontend/android/gradle/wrapper/gradle-wrapper.properties",
+    "frontend/android/settings.gradle",
+    "project_state.json"
+  ]
+}

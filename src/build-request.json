@@ -1,0 +1,39 @@
+{
+  "kind": "build_request",
+  "title": "Provide an Android APK build for the deployed app",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-24",
+      "text": "Add an Android APK packaging option for the existing PWA so the user can download and install the app on an Android device (wrap the deployed web app into an APK and provide a release artifact).",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "give me the apk for android device"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A buildable Android project (or build pipeline) is added to the repo that packages the existing deployed PWA URL into an installable APK.",
+        "A downloadable APK artifact is produced by the build (debug or release), with clear output location and naming documented.",
+        "The APK launches directly into the app in a full-screen/standalone experience and loads the same deployed app as the browser/PWA.",
+        "A short English README section is added explaining how to build the APK locally (prerequisites, commands) and how to install it on an Android device."
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
+    "Keep the backend as a single Motoko actor in backend/main.mo; do not introduce additional backend services."
+  ],
+  "nonGoals": [
+    "Implementing new app features beyond APK packaging.",
+    "Adding third-party authentication methods beyond the existing Internet Identity flow.",
+    "Publishing to the Google Play Store."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

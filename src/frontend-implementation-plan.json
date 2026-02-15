@@ -1,0 +1,119 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Android APK wrapper for deployed PWA",
+  "requirements": [
+    {
+      "id": "REQ-24",
+      "summary": "Add an Android APK packaging option that wraps the deployed PWA URL into an installable APK and document how to build/install it.",
+      "acceptanceCriteria": [
+        "A buildable Android project (or build pipeline) is added to the repo that packages the existing deployed PWA URL into an installable APK.",
+        "A downloadable APK artifact is produced by the build (debug or release), with clear output location and naming documented.",
+        "The APK launches directly into the app in a full-screen/standalone experience and loads the same deployed app as the browser/PWA.",
+        "A short English README section is added explaining how to build the APK locally (prerequisites, commands) and how to install it on an Android device."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/android/.gitignore",
+          "operation": "create",
+          "description": "Add Android/Gradle ignores suitable for committing an Android Studio project while excluding build outputs."
+        },
+        {
+          "path": "frontend/android/README.md",
+          "operation": "create",
+          "description": "Document APK build and install steps in English (Android Studio/Java requirements, Gradle commands), clearly stating the output APK location and naming, and how to sideload/install on an Android device."
+        },
+        {
+          "path": "frontend/android/gradle.properties",
+          "operation": "create",
+          "description": "Add Gradle configuration needed for consistent local/CI builds (e.g., AndroidX settings, JVM args)."
+        },
+        {
+          "path": "frontend/android/settings.gradle",
+          "operation": "create",
+          "description": "Define the Android project settings for the APK wrapper project."
+        },
+        {
+          "path": "frontend/android/build.gradle",
+          "operation": "create",
+          "description": "Add top-level Gradle build configuration for the Android wrapper project."
+        },
+        {
+          "path": "frontend/android/gradlew",
+          "operation": "create",
+          "description": "Add Gradle wrapper script so the APK can be built with a single command without requiring a system Gradle install."
+        },
+        {
+          "path": "frontend/android/gradlew.bat",
+          "operation": "create",
+          "description": "Add Windows Gradle wrapper script for building the APK on Windows machines."
+        },
+        {
+          "path": "frontend/android/gradle/wrapper/gradle-wrapper.properties",
+          "operation": "create",
+          "description": "Pin a Gradle version for reproducible APK builds via the Gradle wrapper."
+        },
+        {
+          "path": "frontend/android/app/build.gradle",
+          "operation": "create",
+          "description": "Configure the Android app module build (applicationId, min/target SDK, signing placeholders for release builds, and tasks to assemble debug/release APKs)."
+        },
+        {
+          "path": "frontend/android/app/src/main/AndroidManifest.xml",
+          "operation": "create",
+          "description": "Define a single launcher Activity that runs full-screen/standalone and hosts a WebView wrapper pointed at the deployed PWA URL (no extra app features beyond packaging)."
+        },
+        {
+          "path": "frontend/android/app/src/main/java/com/frontline/wrapper/MainActivity.kt",
+          "operation": "create",
+          "description": "Implement the minimal Activity that loads the deployed PWA URL in a full-screen WebView (including correct back navigation behavior and basic WebView settings for modern PWAs)."
+        },
+        {
+          "path": "frontend/android/app/src/main/res/values/strings.xml",
+          "operation": "create",
+          "description": "Add app name and a configurable string for the deployed PWA URL so changing the packaged URL does not require code edits."
+        },
+        {
+          "path": "frontend/android/app/src/main/res/values/styles.xml",
+          "operation": "create",
+          "description": "Add a theme that supports a full-screen/standalone experience consistent with the PWA."
+        },
+        {
+          "path": "frontend/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+          "operation": "create",
+          "description": "Add Android launcher icon configuration for the wrapper app (may reference included mipmap assets)."
+        },
+        {
+          "path": "frontend/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+          "operation": "create",
+          "description": "Add round launcher icon configuration for the wrapper app (may reference included mipmap assets)."
+        },
+        {
+          "path": "frontend/android/app/src/main/res/mipmap-hdpi/ic_launcher.png",
+          "operation": "create",
+          "description": "Add launcher icon bitmap for hdpi density (can be derived from existing PWA icons)."
+        },
+        {
+          "path": "frontend/android/app/src/main/res/mipmap-mdpi/ic_launcher.png",
+          "operation": "create",
+          "description": "Add launcher icon bitmap for mdpi density (can be derived from existing PWA icons)."
+        },
+        {
+          "path": "frontend/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+          "operation": "create",
+          "description": "Add launcher icon bitmap for xhdpi density (can be derived from existing PWA icons)."
+        },
+        {
+          "path": "frontend/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+          "operation": "create",
+          "description": "Add launcher icon bitmap for xxhdpi density (can be derived from existing PWA icons)."
+        },
+        {
+          "path": "frontend/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+          "operation": "create",
+          "description": "Add launcher icon bitmap for xxxhdpi density (can be derived from existing PWA icons)."
+        }
+      ]
+    }
+  ]
+}
