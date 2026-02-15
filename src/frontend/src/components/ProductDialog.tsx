@@ -145,7 +145,7 @@ export default function ProductDialog({ open, onOpenChange, product }: ProductDi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="bg-background text-foreground border-border">
         <DialogHeader>
           <DialogTitle>{product ? 'Edit Product' : 'Add Product'}</DialogTitle>
         </DialogHeader>
@@ -210,7 +210,7 @@ export default function ProductDialog({ open, onOpenChange, product }: ProductDi
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-popover text-popover-foreground border-border">
                   <SelectItem value="pieces">Pieces</SelectItem>
                   <SelectItem value="cases">Cases</SelectItem>
                 </SelectContent>

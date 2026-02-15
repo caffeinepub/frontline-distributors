@@ -23,7 +23,11 @@ export default function AppLayout({ children, currentScreen, onNavigate }: AppLa
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-6">
           <div className="mx-auto max-w-7xl">
-            {children}
+            {children || (
+              <div className="flex h-full items-center justify-center">
+                <p className="text-muted-foreground">No content available</p>
+              </div>
+            )}
           </div>
         </main>
         

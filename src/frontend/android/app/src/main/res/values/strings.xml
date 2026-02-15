@@ -18,10 +18,14 @@
         - https://your-custom-domain.com (if using custom domain)
         
         The release build will fail if this is still set to the placeholder.
+        
+        Current build version: v1.5 (versionCode 6)
+        Last updated: Fresh build with unique versioned publishing
     -->
-    <string name="pwa_url">https://your-canister-id.ic0.app</string>
+    <string name="pwa_url">https://frontline-distributors.ic0.app</string>
     
     <!-- Error messages -->
     <string name="error_no_internet">No internet connection. Please check your network settings.</string>
     <string name="error_loading">Failed to load application. Please try again.</string>
+    <string name="loading_app">Loading Frontline Distributors…</string>
 </resources>

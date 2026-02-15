@@ -20,8 +20,8 @@ actor {
     name : Text;
     price : Nat;
     cost : Nat;
-    availableInventory : Nat; // In pieces
-    piecesPerCase : Nat; // Number of pieces per case
+    availableInventory : Nat;
+    piecesPerCase : Nat;
   };
 
   public type Customer = {
@@ -163,12 +163,10 @@ actor {
       Runtime.trap("Bill ID already exists");
     };
 
-    // Check inventory for all products in the bill
     for (product in bill.products.values()) {
       switch (productMap.get(product.id)) {
         case (?existingProduct) {
           if (existingProduct.availableInventory < 1) {
-            // Only sell 1 piece per product on bill for now
             Runtime.trap("Insufficient inventory for product " # product.id.toText());
           };
         };
@@ -176,7 +174,6 @@ actor {
       };
     };
 
-    // Deduct inventory
     for (product in bill.products.values()) {
       switch (productMap.get(product.id)) {
         case (?existingProduct) {
@@ -255,7 +252,6 @@ actor {
     };
   };
 
-  // Helper function to ensure user role
   func requireUser(caller : Principal) {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can perform this action");

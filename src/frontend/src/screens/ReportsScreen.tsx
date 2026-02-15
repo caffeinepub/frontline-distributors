@@ -384,7 +384,7 @@ export default function ReportsScreen() {
 
       {/* Add Expense Dialog */}
       <Dialog open={expenseDialogOpen} onOpenChange={setExpenseDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-background text-foreground border-border">
           <DialogHeader>
             <DialogTitle>Add Expense</DialogTitle>
           </DialogHeader>
@@ -395,7 +395,7 @@ export default function ReportsScreen() {
                 <SelectTrigger id="expense-category">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-popover text-popover-foreground border-border">
                   {EXPENSE_CATEGORIES.map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       {cat}

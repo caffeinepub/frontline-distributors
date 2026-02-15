@@ -1,8 +1,8 @@
-const CACHE_NAME = 'frontline-v1';
+const CACHE_VERSION = 'v2';
+const CACHE_NAME = `frontline-${CACHE_VERSION}`;
 const APP_SHELL = [
   '/',
   '/index.html',
-  '/src/main.tsx',
   '/manifest.webmanifest',
   '/assets/generated/app-icon.dim_192x192.png',
   '/assets/generated/app-icon.dim_512x512.png',
@@ -28,6 +28,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -37,9 +38,10 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - network-first for navigation, cache-first for assets
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+  const url = new URL(request.url);
   
   // Skip non-GET requests (mutations should go to network/queue)
   if (request.method !== 'GET') {
@@ -47,10 +49,44 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Skip canister API calls - let them use existing offline queue
-  if (request.url.includes('/api/') || request.url.includes('ic0.app') || request.url.includes('icp0.io')) {
+  if (url.hostname.includes('ic0.app') || url.hostname.includes('icp0.io') || url.pathname.includes('/api/')) {
     return;
   }
 
+  // Skip source module paths (TypeScript/TSX files should never be cached in production)
+  if (url.pathname.startsWith('/src/') || url.pathname.endsWith('.tsx') || url.pathname.endsWith('.ts')) {
+    return;
+  }
+
+  // Navigation requests: network-first with app-shell fallback
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          // Cache successful navigation responses
+          if (response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseToCache);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // Fallback to cached app shell on network failure
+          return caches.match('/index.html').then((cachedResponse) => {
+            return cachedResponse || new Response('Offline - unable to load app', {
+              status: 503,
+              statusText: 'Service Unavailable',
+              headers: new Headers({ 'Content-Type': 'text/plain' })
+            });
+          });
+        })
+    );
+    return;
+  }
+
+  // Static assets: cache-first with network fallback
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {
@@ -65,7 +101,9 @@ self.addEventListener('fetch', (event) => {
           request.url.endsWith('.png') ||
           request.url.endsWith('.jpg') ||
           request.url.endsWith('.svg') ||
-          request.url.endsWith('.woff2')
+          request.url.endsWith('.woff2') ||
+          request.url.endsWith('.woff') ||
+          request.url.endsWith('.ttf')
         )) {
           const responseToCache = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -75,8 +113,11 @@ self.addEventListener('fetch', (event) => {
 
         return response;
       }).catch(() => {
-        // Return cached response if network fails
-        return caches.match('/index.html');
+        // Return a fallback for failed asset requests
+        return new Response('Asset unavailable offline', {
+          status: 503,
+          statusText: 'Service Unavailable'
+        });
       });
     })
   );

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getQueue, removeFromQueue } from './storage';
 import { useActor } from '../hooks/useActor';
 import { useQueryClient } from '@tanstack/react-query';
@@ -11,20 +11,26 @@ export function useSyncStatus() {
   const [isSyncing, setIsSyncing] = useState(false);
   const { actor } = useActor();
   const queryClient = useQueryClient();
+  const processingRef = useRef(false);
 
   // Update pending count
   const updatePendingCount = useCallback(() => {
-    const queue = getQueue();
-    setPendingCount(queue.length);
+    try {
+      const queue = getQueue();
+      setPendingCount(queue.length);
+    } catch (error) {
+      console.error('Error updating pending count:', error);
+    }
   }, []);
 
   // Process queued actions
   const processQueue = useCallback(async () => {
-    if (!actor || !isOnline || isSyncing) return;
+    if (!actor || !isOnline || isSyncing || processingRef.current) return;
 
     const queue = getQueue();
     if (queue.length === 0) return;
 
+    processingRef.current = true;
     setIsSyncing(true);
     setLastError(null);
 
@@ -79,6 +85,7 @@ export function useSyncStatus() {
     queryClient.invalidateQueries();
     updatePendingCount();
     setIsSyncing(false);
+    processingRef.current = false;
   }, [actor, isOnline, isSyncing, queryClient, updatePendingCount]);
 
   // Monitor online/offline status
@@ -103,8 +110,11 @@ export function useSyncStatus() {
 
   // Process queue when coming online
   useEffect(() => {
-    if (isOnline && actor) {
-      processQueue();
+    if (isOnline && actor && !processingRef.current) {
+      const timer = setTimeout(() => {
+        processQueue();
+      }, 500);
+      return () => clearTimeout(timer);
     }
   }, [isOnline, actor, processQueue]);
 
@@ -117,7 +127,9 @@ export function useSyncStatus() {
 
   const retry = useCallback(() => {
     setLastError(null);
-    processQueue();
+    if (!processingRef.current) {
+      processQueue();
+    }
   }, [processQueue]);
 
   return {

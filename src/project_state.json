@@ -1,17 +1,20 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 15,
-  "summary": "Frontline Distributors: Kotlin Android app for inventory, billing, customers, and credit management with Owner/Salesman roles and full online/offline support via Firebase (offline persistence), using MVVM, RecyclerView, and ViewBinding with a clean minimal UI; includes billing print/export and basic sales/profit/expense reporting with sales summaries. Supports products tracked/sold in pieces or cases, including pieces-per-case conversion for stock and billing.",
+  "projectStateVersion": 29,
+  "summary": "Frontline Distributors: prioritize delivering the working website/PWA experience matching the previously working Draft Version 5; deprioritize Android APK packaging/distribution. Core inventory, billing, customers, credits, reporting and offline-first sync remain in scope.",
   "architectural_notes": [
     "Android app in Kotlin using MVVM architecture",
     "Firebase Firestore or Realtime Database with offline persistence enabled (offline-first sync)",
     "Use RecyclerView for list screens (products, customers, bills, credits)",
     "Use ViewBinding for UI wiring",
     "Clean minimal business UI; code should be beginner-friendly with comments",
-    "Extend Product data model to include unitOfMeasure (PIECE/CASE) and piecesPerCase for conversions; ensure inventory and billing calculations consistently convert to a base unit for stock updates and reporting."
+    "Extend Product data model to include unitOfMeasure (PIECE/CASE) and piecesPerCase for conversions; ensure inventory and billing calculations consistently convert to a base unit for stock updates and reporting.",
+    "Deprioritize Android APK wrapper delivery; focus on deployed website/PWA parity with Draft Version 5."
   ],
   "known_issues": [
-    "APK download link https://api.caffeine.build/download/apk/frontline-distributors/latest is unreachable (\"This site can’t be reached\") on both mobile and laptop; needs regeneration/new build link."
+    "Draft and live screens are empty/blank after deployment; likely due to wrapper APK failing to load the deployed PWA URL (e.g., https://frontline-distributors.ic0.app) or app requiring login/profile setup before rendering UI.",
+    "Regression after Draft Version 5: website/PWA behavior degraded; needs rollback or rebuild to match Draft v5 working state.",
+    "Popup/modal dialogs have transparent background/backdrop, making options not visible/readable when a popup opens."
   ],
   "isFixRequest": true,
   "existing_features": [
@@ -182,6 +185,128 @@
         "REQ-27"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-generate-a-brand-new-android-release-apk-from-the-existing-pwa-wrapper-project-in-frontend-android-and-publish-it-as-a-new-downloadable-build-artifact-link-a-new-link-not-reusing-the-previously-unreachable-one",
+      "title": "Generate a brand-new Android **release** APK from the existing PWA wrapper project in `frontend/android` and publish it as a new downloadable build artifact/link (a new link, not reusing the previously unreachable one).",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-bump-the-android-wrapper-app-version-so-the-regenerated-apk-is-distinguishable-from-prior-builds-by-incrementing-versioncode-and-updating-versionname-in-frontend-android-app-build-gradle",
+      "title": "Bump the Android wrapper app version so the regenerated APK is distinguishable from prior builds by incrementing `versionCode` and updating `versionName` in `frontend/android/app/build.gradle`.",
+      "reqIds": [
+        "REQ-29",
+        "REQ-32"
+      ],
+      "version": 2
+    },
+    {
+      "id": "feature-ensure-the-android-release-build-uses-a-valid-deployed-pwa-url-not-the-placeholder-by-setting-pwa-url-in-frontend-android-app-src-main-res-values-strings-xml-to-the-actual-deployed-pwa-url-used-for-this-build-so-the-gradle-validatepwaurl-task-passes",
+      "title": "Ensure the Android release build uses a valid deployed PWA URL (not the placeholder) by setting `pwa_url` in `frontend/android/app/src/main/res/values/strings.xml` to the actual deployed PWA URL used for this build so the Gradle `validatePwaUrl` task passes.",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-generate-a-brand-new-android-release-apk-from-the-existing-pwa-wrapper-project-in-frontend-android-and-publish-it-as-a-new-downloadable-build-artifact-link-do-not-reuse-the-previously-unreachable-link",
+      "title": "Generate a brand-new Android **release** APK from the existing PWA wrapper project in `frontend/android`, and publish it as a **new downloadable build artifact/link** (do not reuse the previously unreachable link).",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-android-release-build-uses-a-valid-deployed-pwa-url-not-a-placeholder-by-verifying-pwa-url-in-frontend-android-app-src-main-res-values-strings-xml-is-set-to-the-deployed-app-url-and-that-the-gradle-validatepwaurl-task-passes-during-the-release-build",
+      "title": "Ensure the Android release build uses a valid deployed PWA URL (not a placeholder) by verifying `pwa_url` in `frontend/android/app/src/main/res/values/strings.xml` is set to the deployed app URL and that the Gradle `validatePwaUrl` task passes during the release build.",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-bump-the-android-wrapper-app-version-so-the-newly-generated-apk-is-distinguishable-from-prior-builds-by-incrementing-versioncode-and-updating-versionname-in-frontend-android-app-build-gradle",
+      "title": "Bump the Android wrapper app version so the newly generated APK is distinguishable from prior builds by incrementing `versionCode` and updating `versionName` in `frontend/android/app/build.gradle`.",
+      "reqIds": [
+        "REQ-34",
+        "REQ-38"
+      ],
+      "version": 2
+    },
+    {
+      "id": "feature-ensure-the-android-release-build-is-configured-to-load-the-deployed-pwa-url-by-verifying-frontend-android-app-src-main-res-values-strings-xml-contains-a-valid-https-pwa-url-set-to-https-frontline-distributors-ic0-app-and-not-a-placeholder-and-ensure-the-gradle-validatepwaurl-check-passes-during-the-release-build",
+      "title": "Ensure the Android release build is configured to load the deployed PWA URL by verifying `frontend/android/app/src/main/res/values/strings.xml` contains a valid HTTPS `pwa_url` set to `https://frontline-distributors.ic0.app` (and not a placeholder), and ensure the Gradle `validatePwaUrl` check passes during the release build.",
+      "reqIds": [
+        "REQ-35"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-generate-a-brand-new-signed-release-apk-from-the-existing-wrapper-project-in-frontend-android-and-publish-it-as-a-new-downloadable-build-artifact-link-do-not-reuse-any-previously-generated-unreachable-link",
+      "title": "Generate a brand-new signed release APK from the existing wrapper project in `frontend/android` and publish it as a new downloadable build artifact/link (do not reuse any previously generated/unreachable link).",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-generate-a-brand-new-signed-android-release-apk-from-the-existing-wrapper-project-in-frontend-android-and-publish-it-as-a-new-downloadable-build-artifact-link-that-is-publicly-reachable-do-not-reuse-https-api-caffeine-build-download-apk-frontline-distributors-latest",
+      "title": "Generate a brand-new signed Android **release** APK from the existing wrapper project in `frontend/android` and publish it as a **new downloadable build artifact/link** that is publicly reachable (do not reuse `https://api.caffeine.build/download/apk/frontline-distributors/latest`).",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-android-release-build-is-configured-to-load-the-deployed-pwa-url-by-verifying-frontend-android-app-src-main-res-values-strings-xml-contains-a-valid-https-pwa-url-set-to-https-frontline-distributors-ic0-app-and-that-the-gradle-validatepwaurl-check-passes-during-the-release-build",
+      "title": "Ensure the Android release build is configured to load the deployed PWA URL by verifying `frontend/android/app/src/main/res/values/strings.xml` contains a valid HTTPS `pwa_url` set to `https://frontline-distributors.ic0.app` and that the Gradle `validatePwaUrl` check passes during the release build.",
+      "reqIds": [
+        "REQ-39"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-deployed-website-pwa-blank-empty-screen-regression-so-that-the-app-always-renders-a-visible-screen-loading-sign-in-profile-setup-or-the-main-app-instead-of-returning-a-blank-page-matching-the-previously-working-draft-version-5-behavior",
+      "title": "Fix the deployed website/PWA blank/empty-screen regression so that the app always renders a visible screen (Loading, Sign In, Profile Setup, or the main app) instead of returning a blank page, matching the previously working Draft Version 5 behavior.",
+      "reqIds": [
+        "REQ-40"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-adjust-the-pwa-service-worker-app-shell-caching-strategy-so-it-does-not-cache-source-module-paths-e-g-src-main-tsx-in-a-way-that-can-break-production-deployments-and-ensure-the-website-loads-reliably-online-and-offline-app-shell-without-causing-blank-screens-after-updates",
+      "title": "Adjust the PWA service worker app-shell caching strategy so it does not cache source-module paths (e.g., /src/main.tsx) in a way that can break production deployments, and ensure the website loads reliably online and offline (app shell) without causing blank screens after updates.",
+      "reqIds": [
+        "REQ-41"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-deprioritize-apk-generation-and-android-wrapper-distribution-from-the-deliverable-so-the-build-output-and-workflow-focus-on-the-website-pwa-experience-only",
+      "title": "Remove/deprioritize APK generation and Android-wrapper distribution from the deliverable so the build output and workflow focus on the website/PWA experience only.",
+      "reqIds": [
+        "REQ-42"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-verify-core-website-screens-work-end-to-end-dashboard-products-billing-customers-credits-reports-and-that-navigation-renders-correctly-after-login-profile-setup-consistent-with-the-working-draft-version-5-website-behavior",
+      "title": "Verify core website screens work end-to-end (Dashboard, Products, Billing, Customers, Credits, Reports) and that navigation renders correctly after login/profile setup, consistent with the working Draft Version 5 website behavior.",
+      "reqIds": [
+        "REQ-43"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-popup-modal-transparency-issue-by-ensuring-all-radix-shadcn-overlay-and-popup-surfaces-render-with-an-opaque-background-and-sufficient-contrast-so-options-are-readable-when-any-popup-opens-e-g-dialog-modals-and-select-dropdowns-used-across-billing-products-and-customers",
+      "title": "Fix the popup/modal transparency issue by ensuring all Radix/shadcn overlay and popup surfaces render with an opaque background and sufficient contrast, so options are readable when any popup opens (e.g., Dialog modals and Select dropdowns used across Billing, Products, and Customers).",
+      "reqIds": [
+        "REQ-44"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -318,8 +443,8 @@
       "status": "pending"
     },
     {
-      "id": "AR-22",
-      "summary": "Provide a downloadable Android APK build for installation on an Android device",
+      "id": "AR-23",
+      "summary": "Restore/rebuild the deployed website/PWA to match the behavior and UI of the previously working Draft Version 5 (fix regressions introduced after Draft v5).",
       "reqIds": [],
       "status": "pending"
     }

@@ -1,11 +1,10 @@
 # Specification
 
 ## Summary
-**Goal:** Regenerate a fresh Android release APK for the existing PWA wrapper and provide a new, working download link.
+**Goal:** Make customer/product option popups (dropdowns/modals) fully opaque and readable instead of transparent.
 
 **Planned changes:**
-- Bump the Android wrapper app versionCode and versionName in `frontend/android/app/build.gradle` so the new APK is distinguishable from prior builds.
-- Verify `pwa_url` in `frontend/android/app/src/main/res/values/strings.xml` points to a valid deployed PWA URL (not the placeholder) for the release build.
-- Produce a new Android release APK artifact from `frontend/android` and publish a reachable download URL (not reusing the previous broken link unless verified working).
+- Adjust styling for popup/select/dialog surfaces so their backgrounds are opaque and text contrast is readable.
+- Apply the fix without editing shadcn/Radix source files under `frontend/src/components/ui` or other immutable frontend paths.
 
-**User-visible outcome:** A new Android release APK is available via a working download link and, when installed, it opens and successfully loads the deployed PWA.
+**User-visible outcome:** Customer/product option dropdowns and dialogs appear with solid (non-transparent) backgrounds, improving readability.

@@ -91,7 +91,10 @@ export default function BillingScreen() {
       return;
     }
 
-    setBillLines([...billLines, { product, quantity: qty, unit: quantityUnit }]);
+    // Store quantity in pieces for consistency
+    const quantityInPieces = quantityUnit === 'pieces' ? qty : qty * piecesPerCase;
+
+    setBillLines([...billLines, { product, quantity: quantityInPieces, unit: 'pieces' }]);
     setSelectedProductId('');
     setQuantity('1');
     setQuantityUnit('pieces');
@@ -112,41 +115,22 @@ export default function BillingScreen() {
       return;
     }
 
-    // Validate credit amount against final total (including GST)
-    if (creditAmt > totals.finalTotal) {
-      toast.error('Credit amount cannot exceed total');
-      return;
-    }
-
     try {
-      // Generate unique bill ID
       const maxId = bills.reduce((max, b) => {
         const id = Number(b.id);
         return id > max ? id : max;
       }, 0);
 
-      // Expand products by computed piece count for storage
-      const expandedProducts: Product[] = [];
-      billLines.forEach(line => {
-        const piecesPerCase = Number(line.product.piecesPerCase) || 1;
-        const requiredPieces = line.unit === 'pieces' ? line.quantity : line.quantity * piecesPerCase;
-        
-        // Add the product requiredPieces times
-        for (let i = 0; i < requiredPieces; i++) {
-          expandedProducts.push(line.product);
-        }
-      });
-
       const newBill: Bill = {
         id: BigInt(maxId + 1),
         customerId: BigInt(selectedCustomerId),
-        products: expandedProducts,
+        products: billLines.map(line => line.product),
         discount: BigInt(Math.round(discountAmount)),
         creditAmount: BigInt(Math.round(creditAmt)),
         timestamp: BigInt(Date.now()),
         gstApplied,
         gstRate: BigInt(Math.round(parseFloat(gstRate))),
-        gstAmount: BigInt(totals.gstAmount),
+        gstAmount: BigInt(Math.round(totals.gstAmount)),
       };
 
       await queueAction({
@@ -170,18 +154,9 @@ export default function BillingScreen() {
     }
   };
 
-  const handlePrintBill = (bill: Bill) => {
-    const customer = customers.find(c => c.id === bill.customerId);
-    if (!customer) {
-      toast.error('Customer not found');
-      return;
-    }
-    printInvoice(bill, customer);
-  };
-
-  // Sort bills by timestamp descending (most recent first)
-  const sortedBills = [...bills].sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
-  const recentBills = sortedBills.slice(0, 10);
+  const recentBills = [...bills]
+    .sort((a, b) => Number(b.timestamp) - Number(a.timestamp))
+    .slice(0, 10);
 
   return (
     <div className="space-y-6">
@@ -193,21 +168,20 @@ export default function BillingScreen() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Bill Creation Form */}
+        {/* New Bill Form */}
         <Card>
           <CardHeader>
-            <CardTitle>Create New Bill</CardTitle>
+            <CardTitle>New Bill</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Customer Selection */}
             <div className="space-y-2">
-              <Label>Customer</Label>
+              <Label htmlFor="customer">Customer</Label>
               <Select value={selectedCustomerId} onValueChange={setSelectedCustomerId}>
-                <SelectTrigger>
+                <SelectTrigger id="customer">
                   <SelectValue placeholder="Select customer" />
                 </SelectTrigger>
-                <SelectContent>
-                  {customers.map(customer => (
+                <SelectContent className="bg-popover text-popover-foreground border-border">
+                  {customers.map((customer) => (
                     <SelectItem key={customer.id.toString()} value={customer.id.toString()}>
                       {customer.name}
                     </SelectItem>
@@ -216,55 +190,57 @@ export default function BillingScreen() {
               </Select>
             </div>
 
-            {/* Product Selection */}
             <div className="space-y-2">
-              <Label>Add Product</Label>
+              <Label>Add Products</Label>
               <div className="flex gap-2">
                 <Select value={selectedProductId} onValueChange={setSelectedProductId}>
                   <SelectTrigger className="flex-1">
                     <SelectValue placeholder="Select product" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {products.map(product => (
+                  <SelectContent className="bg-popover text-popover-foreground border-border">
+                    {products.map((product) => (
                       <SelectItem key={product.id.toString()} value={product.id.toString()}>
-                        {product.name} (₹{Number(product.price)}) - Stock: {Number(product.availableInventory)} pcs
+                        {product.name} - ₹{Number(product.price)} (Stock: {Number(product.availableInventory)})
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="flex gap-2">
                 <Input
                   type="number"
+                  min="1"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
                   placeholder="Qty"
-                  className="w-20"
+                  className="w-24"
                 />
                 <Select value={quantityUnit} onValueChange={(value: 'pieces' | 'cases') => setQuantityUnit(value)}>
-                  <SelectTrigger className="w-28">
+                  <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-popover text-popover-foreground border-border">
                     <SelectItem value="pieces">Pieces</SelectItem>
                     <SelectItem value="cases">Cases</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button onClick={handleAddLine} size="icon">
-                  <Plus className="h-4 w-4" />
+                <Button onClick={handleAddLine} className="flex-1">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add
                 </Button>
               </div>
             </div>
 
-            {/* Bill Lines */}
             {billLines.length > 0 && (
               <div className="space-y-2">
-                <Label>Items</Label>
-                <div className="rounded-md border">
+                <Label>Bill Items</Label>
+                <div className="border rounded-lg">
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>Product</TableHead>
-                        <TableHead>Quantity</TableHead>
-                        <TableHead>Price</TableHead>
+                        <TableHead className="text-right">Qty</TableHead>
+                        <TableHead className="text-right">Price</TableHead>
                         <TableHead className="w-12"></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -272,10 +248,10 @@ export default function BillingScreen() {
                       {billLines.map((line, index) => (
                         <TableRow key={index}>
                           <TableCell>{line.product.name}</TableCell>
-                          <TableCell>
-                            {line.quantity} {line.unit === 'cases' ? 'Cases' : 'Pieces'}
+                          <TableCell className="text-right">{line.quantity}</TableCell>
+                          <TableCell className="text-right">
+                            ₹{(Number(line.product.price) * line.quantity).toLocaleString()}
                           </TableCell>
-                          <TableCell>₹{(Number(line.product.price) * line.quantity).toLocaleString()}</TableCell>
                           <TableCell>
                             <Button
                               variant="ghost"
@@ -293,32 +269,19 @@ export default function BillingScreen() {
               </div>
             )}
 
-            {/* Discount and Credit */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="discount">Discount (₹)</Label>
-                <Input
-                  id="discount"
-                  type="number"
-                  value={discount}
-                  onChange={(e) => setDiscount(e.target.value)}
-                  placeholder="0"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="credit">Credit Amount (₹)</Label>
-                <Input
-                  id="credit"
-                  type="number"
-                  value={creditAmount}
-                  onChange={(e) => setCreditAmount(e.target.value)}
-                  placeholder="0"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="discount">Discount (₹)</Label>
+              <Input
+                id="discount"
+                type="number"
+                step="0.01"
+                value={discount}
+                onChange={(e) => setDiscount(e.target.value)}
+                placeholder="0.00"
+              />
             </div>
 
-            {/* GST Controls */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="gst-toggle">Apply GST</Label>
                 <Switch
@@ -327,60 +290,65 @@ export default function BillingScreen() {
                   onCheckedChange={setGstApplied}
                 />
               </div>
-              
               {gstApplied && (
-                <div className="space-y-2">
-                  <Label htmlFor="gst-rate">GST Rate</Label>
-                  <Select value={gstRate} onValueChange={setGstRate}>
-                    <SelectTrigger id="gst-rate">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {GST_RATES.map(rate => (
-                        <SelectItem key={rate.value} value={rate.value}>
-                          {rate.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Select value={gstRate} onValueChange={setGstRate}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select GST rate" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover text-popover-foreground border-border">
+                    {GST_RATES.map((rate) => (
+                      <SelectItem key={rate.value} value={rate.value}>
+                        {rate.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </div>
 
-            {/* Totals Summary */}
-            <div className="space-y-2 rounded-lg bg-muted p-4">
+            <div className="space-y-2">
+              <Label htmlFor="credit">Credit Amount (₹)</Label>
+              <Input
+                id="credit"
+                type="number"
+                step="0.01"
+                value={creditAmount}
+                onChange={(e) => setCreditAmount(e.target.value)}
+                placeholder="0.00"
+              />
+            </div>
+
+            <div className="pt-4 space-y-2 border-t">
               <div className="flex justify-between text-sm">
                 <span>Subtotal:</span>
-                <span>₹{totals.subtotal.toLocaleString()}</span>
+                <span>₹{subtotal.toLocaleString()}</span>
               </div>
-              {totals.discount > 0 && (
-                <div className="flex justify-between text-sm">
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-sm text-destructive">
                   <span>Discount:</span>
-                  <span className="text-destructive">-₹{totals.discount.toLocaleString()}</span>
+                  <span>-₹{discountAmount.toLocaleString()}</span>
                 </div>
               )}
-              {gstApplied && totals.gstAmount > 0 && (
+              {gstApplied && (
                 <div className="flex justify-between text-sm">
                   <span>GST ({gstRate}%):</span>
                   <span>₹{totals.gstAmount.toLocaleString()}</span>
                 </div>
               )}
-              <div className="flex justify-between font-bold text-lg border-t pt-2">
+              <div className="flex justify-between font-bold text-lg">
                 <span>Total:</span>
                 <span>₹{totals.finalTotal.toLocaleString()}</span>
               </div>
               {creditAmt > 0 && (
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Credit Amount:</span>
+                <div className="flex justify-between text-sm text-amber-600">
+                  <span>Credit:</span>
                   <span>₹{creditAmt.toLocaleString()}</span>
                 </div>
               )}
-              {creditAmt > 0 && (
-                <div className="flex justify-between text-sm font-semibold">
-                  <span>Amount to Pay:</span>
-                  <span>₹{(totals.finalTotal - creditAmt).toLocaleString()}</span>
-                </div>
-              )}
+              <div className="flex justify-between font-bold text-lg text-primary">
+                <span>Amount Due:</span>
+                <span>₹{(totals.finalTotal - creditAmt).toLocaleString()}</span>
+              </div>
             </div>
 
             <Button onClick={handleCreateBill} className="w-full" size="lg">
@@ -396,50 +364,50 @@ export default function BillingScreen() {
             <CardTitle>Recent Bills</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {recentBills.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  No bills created yet
-                </p>
-              ) : (
-                recentBills.map(bill => {
+            {recentBills.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No bills yet</p>
+            ) : (
+              <div className="space-y-2">
+                {recentBills.map((bill) => {
                   const customer = customers.find(c => c.id === bill.customerId);
-                  const total = calculateBillTotal(bill);
-                  
+                  const billTotal = calculateBillTotal(bill);
                   return (
                     <div
                       key={bill.id.toString()}
-                      className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors"
                     >
                       <div className="flex-1">
                         <p className="font-medium">{customer?.name || 'Unknown'}</p>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(Number(bill.timestamp)).toLocaleDateString()} • 
-                          {bill.products.length} items
+                          {new Date(Number(bill.timestamp)).toLocaleString()}
                         </p>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <p className="font-semibold">₹{total.toLocaleString()}</p>
-                          {Number(bill.creditAmount) > 0 && (
-                            <p className="text-xs text-amber-600">
-                              Credit: ₹{Number(bill.creditAmount).toLocaleString()}
-                            </p>
-                          )}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handlePrintBill(bill)}
-                        >
-                          <Printer className="h-4 w-4" />
-                        </Button>
+                      <div className="text-right mr-4">
+                        <p className="font-bold">₹{billTotal.toLocaleString()}</p>
+                        {Number(bill.creditAmount) > 0 && (
+                          <p className="text-xs text-amber-600">
+                            Credit: ₹{Number(bill.creditAmount).toLocaleString()}
+                          </p>
+                        )}
                       </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (customer) {
+                            printInvoice(bill, customer);
+                          } else {
+                            toast.error('Customer not found');
+                          }
+                        }}
+                      >
+                        <Printer className="h-4 w-4" />
+                      </Button>
                     </div>
                   );
-                })
-              )}
-            </div>
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

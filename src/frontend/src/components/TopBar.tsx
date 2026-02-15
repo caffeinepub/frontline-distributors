@@ -27,9 +27,10 @@ export default function TopBar() {
   const handleInstall = async () => {
     try {
       await promptInstall();
+      toast.success('App installation prompt shown');
     } catch (error) {
       console.error('Install error:', error);
-      toast.error('Failed to install app');
+      toast.info('To install, use your browser\'s "Add to Home Screen" option');
     }
   };
 
@@ -44,7 +45,7 @@ export default function TopBar() {
           {/* Sync Indicator */}
           <SyncIndicator />
           
-          {/* Install App Button */}
+          {/* Install App Button - PWA only */}
           {isInstallable && (
             <Button
               variant="outline"
@@ -53,7 +54,7 @@ export default function TopBar() {
               className="gap-2"
             >
               <Download className="h-4 w-4" />
-              Install app
+              Add to Home Screen
             </Button>
           )}
           

@@ -2,7 +2,6 @@ import { useSyncStatus } from '../offline/useSyncStatus';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Wifi, WifiOff, RefreshCw, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function SyncIndicator() {
   const { isOnline, pendingCount, lastError, retry, isSyncing } = useSyncStatus();

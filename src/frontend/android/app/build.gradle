@@ -11,8 +11,8 @@ android {
         applicationId "com.frontline.wrapper"
         minSdk 24
         targetSdk 34
-        versionCode 2
-        versionName "1.1"
+        versionCode 6
+        versionName "1.5"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -22,7 +22,7 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             
-            // Validate PWA URL before building release
+            // Configure output filename for release builds
             applicationVariants.all { variant ->
                 variant.outputs.all { output ->
                     output.outputFileName = "frontline-distributors-v${versionName}-${versionCode}.apk"
@@ -75,13 +75,16 @@ tasks.register('validatePwaUrl') {
         def stringsFile = file('src/main/res/values/strings.xml')
         def content = stringsFile.text
         
-        if (content.contains('your-canister-id.ic0.app')) {
+        // Check for placeholder URLs
+        if (content.contains('your-canister-id.ic0.app') || 
+            content.contains('your-actual-canister-id.ic0.app') ||
+            content.contains('abc123-xyz.ic0.app')) {
             throw new GradleException(
                 '\n❌ RELEASE BUILD BLOCKED: PWA URL is still set to placeholder!\n' +
                 '\nPlease update the pwa_url in:\n' +
                 '  frontend/android/app/src/main/res/values/strings.xml\n' +
-                '\nReplace "https://your-canister-id.ic0.app" with your actual deployed PWA URL.\n' +
-                'Example: https://abc123-xyz.ic0.app or https://abc123-xyz.icp0.io\n'
+                '\nReplace placeholder with your actual deployed PWA URL.\n' +
+                'Example: https://your-canister-id.ic0.app or https://your-canister-id.icp0.io\n'
             )
         }
         
@@ -91,12 +94,19 @@ tasks.register('validatePwaUrl') {
             def url = matcher.group(1)
             println "✓ PWA URL configured: ${url}"
             
-            // Basic validation
+            // Validate HTTPS
             if (!url.startsWith('https://')) {
-                throw new GradleException("PWA URL must use HTTPS: ${url}")
+                throw new GradleException("❌ PWA URL must use HTTPS for security: ${url}")
             }
+            
+            // Validate it's not empty or just whitespace
+            if (url.trim().length() <= 8) { // "https://" is 8 chars
+                throw new GradleException("❌ PWA URL appears to be empty or invalid: ${url}")
+            }
+            
+            println "✓ PWA URL validation passed"
         } else {
-            throw new GradleException('Could not find pwa_url in strings.xml')
+            throw new GradleException('❌ Could not find pwa_url in strings.xml')
         }
     }
 }

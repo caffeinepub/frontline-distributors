@@ -94,7 +94,7 @@ export default function CustomerDialog({ open, onOpenChange, customer }: Custome
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="bg-background text-foreground border-border">
         <DialogHeader>
           <DialogTitle>{customer ? 'Edit Customer' : 'Add Customer'}</DialogTitle>
         </DialogHeader>

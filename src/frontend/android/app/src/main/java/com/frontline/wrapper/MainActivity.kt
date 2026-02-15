@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.webkit.*
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -90,9 +91,14 @@ class MainActivity : AppCompatActivity() {
                 return false
             }
 
+            override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+                Log.d(TAG, "Loading PWA: $url")
+            }
+
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                // Page loaded successfully
+                Log.d(TAG, "PWA loaded successfully: $url")
             }
 
             override fun onReceivedError(
@@ -101,7 +107,36 @@ class MainActivity : AppCompatActivity() {
                 error: WebResourceError?
             ) {
                 super.onReceivedError(view, request, error)
-                // Handle error - could show a custom error page
+                val errorMsg = error?.description?.toString() ?: "Unknown error"
+                Log.e(TAG, "WebView error: $errorMsg for ${request?.url}")
+                
+                // Show error message to user for main frame errors
+                if (request?.isForMainFrame == true) {
+                    view?.loadData(
+                        """
+                        <html>
+                        <body style="font-family: sans-serif; padding: 20px; text-align: center;">
+                            <h2>${getString(R.string.error_loading)}</h2>
+                            <p>$errorMsg</p>
+                            <p style="color: #666; font-size: 14px;">
+                                ${getString(R.string.error_no_internet)}
+                            </p>
+                        </body>
+                        </html>
+                        """.trimIndent(),
+                        "text/html",
+                        "UTF-8"
+                    )
+                }
+            }
+
+            override fun onReceivedHttpError(
+                view: WebView?,
+                request: WebResourceRequest?,
+                errorResponse: WebResourceResponse?
+            ) {
+                super.onReceivedHttpError(view, request, errorResponse)
+                Log.e(TAG, "HTTP error ${errorResponse?.statusCode} for ${request?.url}")
             }
         }
 
@@ -120,6 +155,7 @@ class MainActivity : AppCompatActivity() {
                 try {
                     startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE)
                 } catch (e: Exception) {
+                    Log.e(TAG, "File chooser error", e)
                     fileUploadCallback = null
                     return false
                 }
@@ -137,17 +173,29 @@ class MainActivity : AppCompatActivity() {
             // Handle console messages for debugging
             override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
                 consoleMessage?.let {
-                    android.util.Log.d(
+                    Log.d(
                         "WebView",
                         "${it.message()} -- From line ${it.lineNumber()} of ${it.sourceId()}"
                     )
                 }
                 return true
             }
+
+            // Show loading progress
+            override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                super.onProgressChanged(view, newProgress)
+                if (newProgress < 100) {
+                    Log.d(TAG, "Loading progress: $newProgress%")
+                }
+            }
         }
 
         // Load the PWA URL
         val pwaUrl = getString(R.string.pwa_url)
+        Log.i(TAG, "Initializing Frontline Distributors Android Wrapper")
+        Log.i(TAG, "Configured PWA URL: $pwaUrl")
+        Log.i(TAG, "Attempting to load PWA...")
+        
         webView.loadUrl(pwaUrl)
     }
 
@@ -181,6 +229,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
+        private const val TAG = "FrontlineDistributors"
         private const val FILE_CHOOSER_REQUEST_CODE = 1001
     }
 }

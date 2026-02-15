@@ -11,9 +11,10 @@ export function usePWAInstall() {
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
-    // Check if already installed
+    // Check if already installed (running as PWA)
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setIsInstalled(true);
+      setIsInstallable(false);
       return;
     }
 
@@ -43,7 +44,7 @@ export function usePWAInstall() {
 
   const promptInstall = async () => {
     if (!deferredPrompt) {
-      return;
+      throw new Error('Install prompt not available');
     }
 
     try {
@@ -60,6 +61,7 @@ export function usePWAInstall() {
       setIsInstallable(false);
     } catch (error) {
       console.error('Error prompting install:', error);
+      throw error;
     }
   };
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useInternetIdentity } from './hooks/useInternetIdentity';
 import { useGetCallerUserProfile } from './hooks/useQueries';
 import LoginScreen from './screens/LoginScreen';
@@ -9,6 +9,7 @@ import CustomersScreen from './screens/CustomersScreen';
 import CreditsScreen from './screens/CreditsScreen';
 import ReportsScreen from './screens/ReportsScreen';
 import AppLayout from './components/AppLayout';
+import AppStartupError from './components/AppStartupError';
 import { Toaster } from '@/components/ui/sonner';
 
 // Screen navigation model
@@ -16,7 +17,7 @@ export type ScreenId = 'dashboard' | 'products' | 'billing' | 'customers' | 'cre
 
 function App() {
   const { identity, isInitializing } = useInternetIdentity();
-  const { data: userProfile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
+  const { data: userProfile, isLoading: profileLoading, isFetched, error: profileError } = useGetCallerUserProfile();
   const [currentScreen, setCurrentScreen] = useState<ScreenId>('dashboard');
 
   // Determine authentication state
@@ -33,6 +34,19 @@ function App() {
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
+    );
+  }
+
+  // Show error state if profile fetch failed
+  if (isAuthenticated && profileError) {
+    return (
+      <>
+        <AppStartupError
+          error={profileError}
+          onRetry={() => window.location.reload()}
+        />
+        <Toaster />
+      </>
     );
   }
 
@@ -63,7 +77,15 @@ function App() {
     );
   }
 
-  return null;
+  // Fallback: should never reach here, but show loading instead of null
+  return (
+    <div className="flex h-screen items-center justify-center bg-background">
+      <div className="text-center">
+        <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
+        <p className="text-muted-foreground">Initializing...</p>
+      </div>
+    </div>
+  );
 }
 
 export default App;

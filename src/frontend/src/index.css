@@ -59,6 +59,91 @@
   }
 }
 
+/* Ensure Dialog overlays are visible and dim the background */
+[data-radix-dialog-overlay],
+[data-radix-alert-dialog-overlay] {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Ensure Dialog content has opaque background - using direct OKLCH values */
+[data-radix-dialog-content],
+[data-radix-alert-dialog-content] {
+  background-color: oklch(98% 0.01 90) !important;
+  color: oklch(20% 0.02 90) !important;
+}
+
+.dark [data-radix-dialog-content],
+.dark [data-radix-alert-dialog-content] {
+  background-color: oklch(18% 0.02 90) !important;
+  color: oklch(95% 0.01 90) !important;
+}
+
+/* Ensure Select dropdowns have opaque background - using direct OKLCH values */
+[data-radix-select-content],
+[data-radix-select-viewport] {
+  background-color: oklch(100% 0 0) !important;
+  color: oklch(20% 0.02 90) !important;
+  border: 1px solid oklch(88% 0.01 90) !important;
+}
+
+.dark [data-radix-select-content],
+.dark [data-radix-select-viewport] {
+  background-color: oklch(22% 0.02 90) !important;
+  color: oklch(95% 0.01 90) !important;
+  border: 1px solid oklch(30% 0.02 90) !important;
+}
+
+/* Ensure Select items have proper hover states */
+[data-radix-select-item] {
+  color: oklch(20% 0.02 90) !important;
+}
+
+.dark [data-radix-select-item] {
+  color: oklch(95% 0.01 90) !important;
+}
+
+[data-radix-select-item][data-highlighted] {
+  background-color: oklch(92% 0.01 90) !important;
+  color: oklch(25% 0.02 90) !important;
+}
+
+.dark [data-radix-select-item][data-highlighted] {
+  background-color: oklch(28% 0.02 90) !important;
+  color: oklch(95% 0.01 90) !important;
+}
+
+/* Ensure DropdownMenu content has opaque background */
+[data-radix-dropdown-menu-content] {
+  background-color: oklch(100% 0 0) !important;
+  color: oklch(20% 0.02 90) !important;
+  border: 1px solid oklch(88% 0.01 90) !important;
+}
+
+.dark [data-radix-dropdown-menu-content] {
+  background-color: oklch(22% 0.02 90) !important;
+  color: oklch(95% 0.01 90) !important;
+  border: 1px solid oklch(30% 0.02 90) !important;
+}
+
+/* Ensure DropdownMenu items have proper hover states */
+[data-radix-dropdown-menu-item] {
+  color: oklch(20% 0.02 90) !important;
+}
+
+.dark [data-radix-dropdown-menu-item] {
+  color: oklch(95% 0.01 90) !important;
+}
+
+[data-radix-dropdown-menu-item][data-highlighted] {
+  background-color: oklch(92% 0.01 90) !important;
+  color: oklch(25% 0.02 90) !important;
+}
+
+.dark [data-radix-dropdown-menu-item][data-highlighted] {
+  background-color: oklch(28% 0.02 90) !important;
+  color: oklch(95% 0.01 90) !important;
+}
+
 /* Print styles for invoices */
 @media print {
   body {

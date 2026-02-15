@@ -1,27 +1,41 @@
-# Frontline Distributors - Android APK
+# Frontline Distributors Android Wrapper
 
-This directory contains an Android wrapper project that packages the Frontline Distributors PWA into an installable APK for Android devices.
+This directory contains the Android wrapper for the Frontline Distributors PWA (Progressive Web App). The wrapper provides a native Android app experience by loading the deployed PWA in a fullscreen WebView.
 
-## ⚠️ Important: Configure PWA URL First
+## 📋 Overview
 
-**Before building the release APK**, you must configure the deployed PWA URL:
+- **App Name**: Frontline Distributors
+- **Package**: com.frontline.wrapper
+- **Current Version**: v1.5 (versionCode 6)
+- **Min SDK**: 24 (Android 7.0)
+- **Target SDK**: 34 (Android 14)
 
-1. Deploy your frontend canister to the Internet Computer
-2. Get your canister URL (e.g., `https://abc123-xyz.ic0.app`)
-3. Update `app/src/main/res/values/strings.xml`:
-   ```xml
-   <string name="pwa_url">https://your-actual-canister-id.ic0.app</string>
-   ```
+## 🔧 Prerequisites
 
-The build will **automatically fail** if you try to build a release APK with the placeholder URL.
+- **JDK 17 or higher** (required for Gradle 8.2)
+- **Android SDK** with API level 34
+- **Gradle 8.2** (included via wrapper)
 
-## Prerequisites
+## ⚙️ Configuration
 
-- **Java Development Kit (JDK)**: JDK 17 or higher
-- **Android SDK**: Android SDK 34 (API level 34) or higher
-- **Android Studio** (optional but recommended): Latest stable version
+### PWA URL Setup (CRITICAL)
 
-## Quick Start: Build Release APK
+Before building a release APK, you **must** configure the PWA URL in:
 
-### Using the Build Script (Easiest)
+`frontend/android/app/src/main/res/values/strings.xml`
+
+The PWA URL is currently configured to: `https://frontline-distributors.ic0.app`
+
+**The release build will automatically fail if:**
+- The URL is still set to a placeholder (e.g., `your-canister-id.ic0.app`)
+- The URL doesn't use HTTPS
+- The URL is empty or invalid
+
+This validation ensures you never accidentally build a release APK pointing to the wrong URL.
+
+## 🏗️ Building the APK
+
+### Automated Build Script (Recommended)
+
+The easiest way to build a release APK is using the automated build script:
 
