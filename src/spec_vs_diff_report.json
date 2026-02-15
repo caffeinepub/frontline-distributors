@@ -1,30 +1,50 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T17:15:17.288Z",
-  "summary": "The diff implements global CSS overrides to make Radix Dialog overlays/content and Select/DropdownMenu popups opaque (addressing transparent dropdowns/modals) without touching the read-only `frontend/src/components/ui` path. However, the diff also appears to introduce broader global theme/palette changes and updates to project metadata files, which were not requested.",
-  "missing_requirements": [],
+  "generatedAt": "2026-02-15T23:49:03.549Z",
+  "summary": "REQ-60 and REQ-61 appear implemented via MobileNavDrawer opacity/background tweaks, global CSS overrides for Radix Sheet overlay/content (including disabling backdrop-filter), and cache-busting updates (BUILD_ID and SW cache version). REQ-62 (fresh Draft deploy + new preview link) is not evidenced in the diff. Several additional/unrequested changes were made (global dialog overlay styling, service worker registration logic in index.html, and updates to project metadata files).",
+  "missing_requirements": [
+    {
+      "id": "REQ-62",
+      "requirement": "Deploy a fresh Draft build of the app and provide a new shareable preview link (do not reuse the previous draft link).",
+      "reason": "No deployment artifacts, CI/CD changes, or preview URL/link are shown in the provided diff summary; code changes alone do not evidence a new Draft deployment or a new preview link.",
+      "evidence": [
+        "<file-diff>: no deployment/preview-link related files or outputs shown"
+      ]
+    }
+  ],
   "hallucinated_features": [
     {
-      "description": "Broader global color theme/palette changes (new OKLCH palette variables across background/foreground/card/popover/primary/etc.) beyond just fixing popup opacity/readability.",
-      "reason": "BuildRequest explicitly scoped work to fixing popup/select/dialog background opacity and readability and listed 'Do not add new features beyond fixing popup/select/dialog background opacity and readability.' The diff shows extensive root and dark theme variable changes that look like a general re-theming.",
+      "description": "Made Dialog and AlertDialog overlays/content fully opaque globally (not limited to the mobile navigation Sheet/drawer).",
+      "reason": "REQ-60 targets the mobile hamburger navigation drawer (Sheet) surface and its overlay/backdrop; the diff adds global styles for dialog/alert-dialog overlays and contents as well.",
       "evidence": [
         "frontend/src/index.css"
       ]
     },
     {
-      "description": "Project metadata/documentation updates (frontend file summaries and project_state version/state changes).",
-      "reason": "Not requested by the BuildRequest, which focused on a UI styling issue. These files do not directly implement the popup opacity fix and appear to be ancillary bookkeeping.",
+      "description": "Added/changed service worker registration behavior to include a buildId query parameter and a ?nosw=1 disable switch, plus console logging in index.html.",
+      "reason": "REQ-61 only asks to bump BUILD_ID in buildInfo.ts and bump the SW cache version constant in sw.js; modifying SW registration logic and adding a disable parameter is additional behavior not requested.",
+      "evidence": [
+        "frontend/index.html"
+      ]
+    },
+    {
+      "description": "Updated repository metadata/state tracking files (frontend-file-summaries.txt, project_state.json).",
+      "reason": "Not part of REQ-60/61/62 and not required to achieve drawer opacity fixes or cache busting.",
       "evidence": [
         "frontend-file-summaries.txt",
         "project_state.json"
       ]
     }
   ],
-  "confidence": 0.63,
+  "confidence": 0.74,
   "changed_files": [
     "frontend-file-summaries.txt",
+    "frontend/index.html",
+    "frontend/public/sw.js",
+    "frontend/src/components/MobileNavDrawer.tsx",
     "frontend/src/index.css",
+    "frontend/src/utils/buildInfo.ts",
     "project_state.json"
   ]
 }

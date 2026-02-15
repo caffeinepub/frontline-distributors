@@ -1,16 +1,72 @@
 {
   "kind": "build_request",
-  "title": "Make customer/product option popups opaque (fix transparent dropdowns/modals)",
-  "priority": "normal",
-  "requirements": [],
+  "title": "Make mobile navigation drawer and overlay fully opaque, then redeploy with a fresh preview link",
+  "priority": "high",
+  "requirements": [
+    {
+      "id": "REQ-60",
+      "text": "Fix the mobile hamburger navigation drawer so that both the drawer surface and its overlay/backdrop are fully opaque (no translucency) and the navigation items are always readable on mobile, in both light and dark themes.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-11"
+        ],
+        "quotes": [
+          "make the drawer background and its overlay fully opaque so the menu items are always readable."
+        ]
+      },
+      "acceptanceCriteria": [
+        "On a small/mobile viewport, opening the hamburger menu shows a fully opaque drawer surface (no transparency) in both light and dark themes.",
+        "The overlay/backdrop behind the drawer is fully opaque (no transparency) and does not use blur/backdrop-filter effects that reduce readability.",
+        "All navigation labels (Dashboard, Products, Billing, Customers, Credits, Reports) remain clearly readable against the drawer background.",
+        "Change is implemented without modifying any files under frontend/src/components/ui (immutable shadcn path constraint)."
+      ]
+    },
+    {
+      "id": "REQ-61",
+      "text": "Force clients to pick up the fresh build assets after redeploy by bumping the app build identifier and the PWA service worker cache version.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-11"
+        ],
+        "quotes": [
+          "deploy a fresh version and give you a new preview link."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Increment the build identifier in frontend/src/utils/buildInfo.ts so the app detects a new deployment.",
+        "Increment the service worker cache version constant in frontend/public/sw.js (e.g., v3 -> v4) so previously cached assets are not reused.",
+        "After deployment, a hard refresh is not required for most clients to see the updated drawer/overlay styling."
+      ]
+    },
+    {
+      "id": "REQ-62",
+      "text": "Deploy a fresh Draft build of the app and provide a new shareable preview link (do not reuse the previous draft link).",
+      "target": "unknown",
+      "source": {
+        "messageIds": [
+          "msg-11"
+        ],
+        "quotes": [
+          "deploy a fresh version and give you a new preview link."
+        ]
+      },
+      "acceptanceCriteria": [
+        "A new Draft deployment is created successfully.",
+        "A new preview URL is generated and shared that is different from the previous draft URL."
+      ]
+    }
+  ],
   "constraints": [
-    "Do not modify any files under frontend/src/components/ui (shadcn/Radix sources are read-only).",
-    "Do not modify any immutable frontend paths listed in SYSTEM_CONTEXT (e.g., frontend/src/main.tsx and frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts).",
-    "Keep all user-facing text in English."
+    "Use English for any user-facing text.",
+    "Do not modify immutable frontend paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
+    "Stay focused on the website/PWA experience; do not add or change Android APK wrapper distribution as part of this request."
   ],
   "nonGoals": [
-    "No backend (Motoko) changes are required for this UI styling issue.",
-    "Do not add new features beyond fixing popup/select/dialog background opacity and readability."
+    "Do not change navigation items, routes, or screen behavior beyond opacity/readability fixes for the mobile drawer.",
+    "Do not add new authentication methods or backend features.",
+    "Do not redesign the overall app theme beyond what is required to make the drawer and overlay fully opaque and readable."
   ],
   "imageRequirements": {
     "required": [],

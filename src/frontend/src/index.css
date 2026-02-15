@@ -59,31 +59,104 @@
   }
 }
 
-/* Ensure Dialog overlays are visible and dim the background */
+/* ===== OPAQUE OVERLAY & POPUP SURFACES ===== */
+
+/* Dialog & AlertDialog overlays - fully opaque dimming */
 [data-radix-dialog-overlay],
 [data-radix-alert-dialog-overlay] {
-  background-color: rgba(0, 0, 0, 0.5) !important;
+  background-color: rgba(0, 0, 0, 0.85) !important;
+  opacity: 1 !important;
 }
 
-/* Ensure Dialog content has opaque background - using direct OKLCH values */
+/* Dialog & AlertDialog content - fully opaque */
 [data-radix-dialog-content],
 [data-radix-alert-dialog-content] {
-  background-color: oklch(98% 0.01 90) !important;
+  background-color: oklch(100% 0 0) !important;
   color: oklch(20% 0.02 90) !important;
+  opacity: 1 !important;
 }
 
 .dark [data-radix-dialog-content],
 .dark [data-radix-alert-dialog-content] {
+  background-color: oklch(22% 0.02 90) !important;
+  color: oklch(95% 0.01 90) !important;
+  opacity: 1 !important;
+}
+
+/* Sheet overlays - FULLY OPAQUE BLACK with maximum specificity */
+[data-radix-sheet-overlay],
+[data-radix-portal] [data-radix-sheet-overlay],
+div[data-radix-sheet-overlay],
+body [data-radix-sheet-overlay],
+html [data-radix-sheet-overlay] {
+  background-color: rgba(0, 0, 0, 1) !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Sheet content - FULLY OPAQUE with maximum specificity */
+[data-radix-sheet-content],
+[data-radix-portal] [data-radix-sheet-content],
+div[data-radix-sheet-content],
+body [data-radix-sheet-content],
+html [data-radix-sheet-content] {
+  background-color: oklch(98% 0.01 90) !important;
+  color: oklch(20% 0.02 90) !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.dark [data-radix-sheet-content],
+.dark [data-radix-portal] [data-radix-sheet-content],
+.dark div[data-radix-sheet-content],
+.dark body [data-radix-sheet-content],
+.dark html [data-radix-sheet-content] {
   background-color: oklch(18% 0.02 90) !important;
+  color: oklch(95% 0.01 90) !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Ensure all child elements in Sheet are also fully opaque and readable */
+[data-radix-sheet-content] *,
+[data-radix-portal] [data-radix-sheet-content] *,
+div[data-radix-sheet-content] *,
+body [data-radix-sheet-content] *,
+html [data-radix-sheet-content] * {
+  opacity: 1 !important;
+}
+
+/* Sheet buttons and navigation items - ensure proper contrast and readability */
+[data-radix-sheet-content] button,
+[data-radix-sheet-content] nav,
+[data-radix-sheet-content] header,
+[data-radix-sheet-content] h1,
+[data-radix-sheet-content] h2,
+[data-radix-sheet-content] h3,
+[data-radix-sheet-content] span,
+[data-radix-sheet-content] div {
+  opacity: 1 !important;
+}
+
+/* Ensure Sheet text is always readable */
+[data-radix-sheet-content] {
+  color: oklch(20% 0.02 90) !important;
+}
+
+.dark [data-radix-sheet-content] {
   color: oklch(95% 0.01 90) !important;
 }
 
-/* Ensure Select dropdowns have opaque background - using direct OKLCH values */
+/* Select dropdowns - fully opaque */
 [data-radix-select-content],
 [data-radix-select-viewport] {
   background-color: oklch(100% 0 0) !important;
   color: oklch(20% 0.02 90) !important;
   border: 1px solid oklch(88% 0.01 90) !important;
+  opacity: 1 !important;
 }
 
 .dark [data-radix-select-content],
@@ -91,57 +164,250 @@
   background-color: oklch(22% 0.02 90) !important;
   color: oklch(95% 0.01 90) !important;
   border: 1px solid oklch(30% 0.02 90) !important;
+  opacity: 1 !important;
 }
 
-/* Ensure Select items have proper hover states */
+/* Select items with proper hover states */
 [data-radix-select-item] {
   color: oklch(20% 0.02 90) !important;
+  opacity: 1 !important;
 }
 
 .dark [data-radix-select-item] {
   color: oklch(95% 0.01 90) !important;
+  opacity: 1 !important;
 }
 
 [data-radix-select-item][data-highlighted] {
   background-color: oklch(92% 0.01 90) !important;
   color: oklch(25% 0.02 90) !important;
+  opacity: 1 !important;
 }
 
 .dark [data-radix-select-item][data-highlighted] {
   background-color: oklch(28% 0.02 90) !important;
   color: oklch(95% 0.01 90) !important;
+  opacity: 1 !important;
 }
 
-/* Ensure DropdownMenu content has opaque background */
-[data-radix-dropdown-menu-content] {
+/* DropdownMenu - fully opaque (including sub-content for nested menus) */
+[data-radix-dropdown-menu-content],
+[data-radix-dropdown-menu-sub-content] {
   background-color: oklch(100% 0 0) !important;
   color: oklch(20% 0.02 90) !important;
   border: 1px solid oklch(88% 0.01 90) !important;
+  opacity: 1 !important;
 }
 
-.dark [data-radix-dropdown-menu-content] {
+.dark [data-radix-dropdown-menu-content],
+.dark [data-radix-dropdown-menu-sub-content] {
   background-color: oklch(22% 0.02 90) !important;
   color: oklch(95% 0.01 90) !important;
   border: 1px solid oklch(30% 0.02 90) !important;
+  opacity: 1 !important;
 }
 
-/* Ensure DropdownMenu items have proper hover states */
+/* DropdownMenu items with proper hover states */
 [data-radix-dropdown-menu-item] {
   color: oklch(20% 0.02 90) !important;
+  opacity: 1 !important;
 }
 
 .dark [data-radix-dropdown-menu-item] {
   color: oklch(95% 0.01 90) !important;
+  opacity: 1 !important;
 }
 
 [data-radix-dropdown-menu-item][data-highlighted] {
   background-color: oklch(92% 0.01 90) !important;
   color: oklch(25% 0.02 90) !important;
+  opacity: 1 !important;
 }
 
 .dark [data-radix-dropdown-menu-item][data-highlighted] {
   background-color: oklch(28% 0.02 90) !important;
   color: oklch(95% 0.01 90) !important;
+  opacity: 1 !important;
+}
+
+/* Popover - fully opaque */
+[data-radix-popover-content] {
+  background-color: oklch(100% 0 0) !important;
+  color: oklch(20% 0.02 90) !important;
+  border: 1px solid oklch(88% 0.01 90) !important;
+  opacity: 1 !important;
+}
+
+.dark [data-radix-popover-content] {
+  background-color: oklch(22% 0.02 90) !important;
+  color: oklch(95% 0.01 90) !important;
+  border: 1px solid oklch(30% 0.02 90) !important;
+  opacity: 1 !important;
+}
+
+/* ContextMenu - fully opaque (including sub-content for nested menus) */
+[data-radix-context-menu-content],
+[data-radix-context-menu-sub-content] {
+  background-color: oklch(100% 0 0) !important;
+  color: oklch(20% 0.02 90) !important;
+  border: 1px solid oklch(88% 0.01 90) !important;
+  opacity: 1 !important;
+}
+
+.dark [data-radix-context-menu-content],
+.dark [data-radix-context-menu-sub-content] {
+  background-color: oklch(22% 0.02 90) !important;
+  color: oklch(95% 0.01 90) !important;
+  border: 1px solid oklch(30% 0.02 90) !important;
+  opacity: 1 !important;
+}
+
+/* ContextMenu items with proper hover states */
+[data-radix-context-menu-item] {
+  color: oklch(20% 0.02 90) !important;
+  opacity: 1 !important;
+}
+
+.dark [data-radix-context-menu-item] {
+  color: oklch(95% 0.01 90) !important;
+  opacity: 1 !important;
+}
+
+[data-radix-context-menu-item][data-highlighted] {
+  background-color: oklch(92% 0.01 90) !important;
+  color: oklch(25% 0.02 90) !important;
+  opacity: 1 !important;
+}
+
+.dark [data-radix-context-menu-item][data-highlighted] {
+  background-color: oklch(28% 0.02 90) !important;
+  color: oklch(95% 0.01 90) !important;
+  opacity: 1 !important;
+}
+
+/* Menubar - fully opaque (including sub-content for nested menus) */
+[data-radix-menubar-content],
+[data-radix-menubar-sub-content] {
+  background-color: oklch(100% 0 0) !important;
+  color: oklch(20% 0.02 90) !important;
+  border: 1px solid oklch(88% 0.01 90) !important;
+  opacity: 1 !important;
+}
+
+.dark [data-radix-menubar-content],
+.dark [data-radix-menubar-sub-content] {
+  background-color: oklch(22% 0.02 90) !important;
+  color: oklch(95% 0.01 90) !important;
+  border: 1px solid oklch(30% 0.02 90) !important;
+  opacity: 1 !important;
+}
+
+/* Menubar items with proper hover states */
+[data-radix-menubar-item] {
+  color: oklch(20% 0.02 90) !important;
+  opacity: 1 !important;
+}
+
+.dark [data-radix-menubar-item] {
+  color: oklch(95% 0.01 90) !important;
+  opacity: 1 !important;
+}
+
+[data-radix-menubar-item][data-highlighted] {
+  background-color: oklch(92% 0.01 90) !important;
+  color: oklch(25% 0.02 90) !important;
+  opacity: 1 !important;
+}
+
+.dark [data-radix-menubar-item][data-highlighted] {
+  background-color: oklch(28% 0.02 90) !important;
+  color: oklch(95% 0.01 90) !important;
+  opacity: 1 !important;
+}
+
+/* Tooltip - fully opaque */
+[data-radix-tooltip-content] {
+  background-color: oklch(20% 0.02 90) !important;
+  color: oklch(98% 0.01 90) !important;
+  border: 1px solid oklch(30% 0.02 90) !important;
+  opacity: 1 !important;
+}
+
+.dark [data-radix-tooltip-content] {
+  background-color: oklch(95% 0.01 90) !important;
+  color: oklch(20% 0.02 90) !important;
+  border: 1px solid oklch(88% 0.01 90) !important;
+  opacity: 1 !important;
+}
+
+/* HoverCard - fully opaque */
+[data-radix-hover-card-content] {
+  background-color: oklch(100% 0 0) !important;
+  color: oklch(20% 0.02 90) !important;
+  border: 1px solid oklch(88% 0.01 90) !important;
+  opacity: 1 !important;
+}
+
+.dark [data-radix-hover-card-content] {
+  background-color: oklch(22% 0.02 90) !important;
+  color: oklch(95% 0.01 90) !important;
+  border: 1px solid oklch(30% 0.02 90) !important;
+  opacity: 1 !important;
+}
+
+/* Command (cmdk) - fully opaque */
+[cmdk-root],
+[cmdk-dialog] {
+  background-color: oklch(100% 0 0) !important;
+  color: oklch(20% 0.02 90) !important;
+  opacity: 1 !important;
+}
+
+.dark [cmdk-root],
+.dark [cmdk-dialog] {
+  background-color: oklch(22% 0.02 90) !important;
+  color: oklch(95% 0.01 90) !important;
+  opacity: 1 !important;
+}
+
+[cmdk-item] {
+  color: oklch(20% 0.02 90) !important;
+  opacity: 1 !important;
+}
+
+.dark [cmdk-item] {
+  color: oklch(95% 0.01 90) !important;
+  opacity: 1 !important;
+}
+
+[cmdk-item][data-selected="true"] {
+  background-color: oklch(92% 0.01 90) !important;
+  color: oklch(25% 0.02 90) !important;
+  opacity: 1 !important;
+}
+
+.dark [cmdk-item][data-selected="true"] {
+  background-color: oklch(28% 0.02 90) !important;
+  color: oklch(95% 0.01 90) !important;
+  opacity: 1 !important;
+}
+
+/* Drawer (vaul) - fully opaque */
+[vaul-drawer] {
+  background-color: oklch(100% 0 0) !important;
+  color: oklch(20% 0.02 90) !important;
+  opacity: 1 !important;
+}
+
+.dark [vaul-drawer] {
+  background-color: oklch(22% 0.02 90) !important;
+  color: oklch(95% 0.01 90) !important;
+  opacity: 1 !important;
+}
+
+[vaul-overlay] {
+  background-color: rgba(0, 0, 0, 1) !important;
+  opacity: 1 !important;
 }
 
 /* Print styles for invoices */

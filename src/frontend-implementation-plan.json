@@ -1,6 +1,70 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Make customer/product option popups opaque (fix transparent dropdowns/modals)",
-  "requirements": []
+  "title": "Opaque mobile nav drawer/overlay and cache-busting build bump",
+  "requirements": [
+    {
+      "id": "REQ-60",
+      "summary": "Make the mobile hamburger Sheet drawer surface and overlay fully opaque and ensure nav labels remain readable in light/dark themes without touching immutable shadcn UI files.",
+      "acceptanceCriteria": [
+        "On a small/mobile viewport, opening the hamburger menu shows a fully opaque drawer surface (no transparency) in both light and dark themes.",
+        "The overlay/backdrop behind the drawer is fully opaque (no transparency) and does not use blur/backdrop-filter effects that reduce readability.",
+        "All navigation labels (Dashboard, Products, Billing, Customers, Credits, Reports) remain clearly readable against the drawer background.",
+        "Change is implemented without modifying any files under frontend/src/components/ui (immutable shadcn path constraint)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/MobileNavDrawer.tsx",
+          "operation": "modify",
+          "description": "Adjust the mobile drawer (SheetContent) and its navigation item styling to enforce fully opaque surfaces and high-contrast text/icons for both light and dark themes (e.g., ensure drawer uses an opaque theme surface and nav items explicitly use readable foreground colors). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Harden global Radix Sheet overlay/content rules to guarantee the mobile navigation overlay/backdrop and drawer content are fully opaque and have no blur/backdrop-filter in both themes; ensure these overrides do not require modifying frontend/src/components/ui."
+        }
+      ]
+    },
+    {
+      "id": "REQ-61",
+      "summary": "Bump the app build identifier and the service worker cache version so clients pick up fresh assets after redeploy.",
+      "acceptanceCriteria": [
+        "Increment the build identifier in frontend/src/utils/buildInfo.ts so the app detects a new deployment.",
+        "Increment the service worker cache version constant in frontend/public/sw.js (e.g., v3 -> v4) so previously cached assets are not reused.",
+        "After deployment, a hard refresh is not required for most clients to see the updated drawer/overlay styling."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/buildInfo.ts",
+          "operation": "modify",
+          "description": "Increment BUILD_ID to a new value so the app detects a new deployment and triggers its cache-reset behavior."
+        },
+        {
+          "path": "frontend/public/sw.js",
+          "operation": "modify",
+          "description": "Increment CACHE_VERSION (e.g., v3 → v4) so the service worker uses a new cache namespace and cleans up old cached assets on activation."
+        },
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Update the service worker registration query parameter buildId to match the new BUILD_ID so the browser fetches a fresh service worker script URL on the new deployment."
+        }
+      ]
+    },
+    {
+      "id": "REQ-62",
+      "summary": "Prepare for a fresh Draft deployment and capture the steps needed to produce and share a new preview link.",
+      "acceptanceCriteria": [
+        "A new Draft deployment is created successfully.",
+        "A new preview URL is generated and shared that is different from the previous draft URL."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/DEPLOY_DRAFT_PREVIEW.md",
+          "operation": "create",
+          "description": "Add a short deployment checklist documenting how to create a fresh Draft deployment and where to retrieve the newly generated preview URL (ensuring it is not reusing the prior draft link)."
+        }
+      ]
+    }
+  ]
 }

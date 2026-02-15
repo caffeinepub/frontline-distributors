@@ -1,4 +1,46 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-fix-the-mobile-hamburger-navigation-drawer-so-that-both-the-drawer-surface-and-its-overlay-backdrop-are-fully-opaque-no-translucency-and-the-navigation-items-are-always-readable-on-mobile-in-both-light-and-dark-themes",
+      "featureTitle": "Fix the mobile hamburger navigation drawer so that both the drawer surface and its overlay/backdrop are fully opaque (no translucency) and the navigation items are always readable on mobile, in both light and dark themes.",
+      "files": [
+        "frontend/src/components/MobileNavDrawer.tsx",
+        "frontend/src/index.css"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-60"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-force-clients-to-pick-up-the-fresh-build-assets-after-redeploy-by-bumping-the-app-build-identifier-and-the-pwa-service-worker-cache-version",
+      "featureTitle": "Force clients to pick up the fresh build assets after redeploy by bumping the app build identifier and the PWA service worker cache version.",
+      "files": [
+        "frontend/index.html",
+        "frontend/public/sw.js",
+        "frontend/src/utils/buildInfo.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-61"
+      ],
+      "confidence": "high"
+    }
+  ]
 }

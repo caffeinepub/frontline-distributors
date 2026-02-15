@@ -80,9 +80,9 @@ actor {
     userProfiles.add(caller, profile);
   };
 
-  // Product Management
+  // Product Management - Admin only for create/update/delete
   public shared ({ caller }) func createProduct(product : Product) : async () {
-    requireUser(caller);
+    requireAdmin(caller);
     if (productMap.containsKey(product.id)) {
       Runtime.trap("Product ID already exists");
     };
@@ -90,7 +90,7 @@ actor {
   };
 
   public shared ({ caller }) func updateProduct(product : Product) : async () {
-    requireUser(caller);
+    requireAdmin(caller);
     if (not productMap.containsKey(product.id)) {
       Runtime.trap("Product not found");
     };
@@ -111,16 +111,16 @@ actor {
   };
 
   public shared ({ caller }) func deleteProduct(pid : ProductId) : async () {
-    requireUser(caller);
+    requireAdmin(caller);
     if (not productMap.containsKey(pid)) {
       Runtime.trap("Product not found");
     };
     productMap.remove(pid);
   };
 
-  // Customer Management
+  // Customer Management - Admin only for create/update/delete
   public shared ({ caller }) func createCustomer(customer : Customer) : async () {
-    requireUser(caller);
+    requireAdmin(caller);
     if (customerMap.containsKey(customer.id)) {
       Runtime.trap("Customer ID already exists");
     };
@@ -128,7 +128,7 @@ actor {
   };
 
   public shared ({ caller }) func updateCustomer(customer : Customer) : async () {
-    requireUser(caller);
+    requireAdmin(caller);
     if (not customerMap.containsKey(customer.id)) {
       Runtime.trap("Customer not found");
     };
@@ -149,14 +149,14 @@ actor {
   };
 
   public shared ({ caller }) func deleteCustomer(cid : CustomerId) : async () {
-    requireUser(caller);
+    requireAdmin(caller);
     if (not customerMap.containsKey(cid)) {
       Runtime.trap("Customer not found");
     };
     customerMap.remove(cid);
   };
 
-  // Bill Management
+  // Bill Management - Users can create and view, only admins can delete
   public shared ({ caller }) func createBill(bill : Bill) : async () {
     requireUser(caller);
     if (billMap.containsKey(bill.id)) {
@@ -203,16 +203,16 @@ actor {
   };
 
   public shared ({ caller }) func deleteBill(bid : BillId) : async () {
-    requireUser(caller);
+    requireAdmin(caller);
     if (not billMap.containsKey(bid)) {
       Runtime.trap("Bill not found");
     };
     billMap.remove(bid);
   };
 
-  // Expense Management
+  // Expense Management - Admin only
   public shared ({ caller }) func createExpense(expense : Expense) : async () {
-    requireUser(caller);
+    requireAdmin(caller);
     if (expenseMap.containsKey(expense.id)) {
       Runtime.trap("Expense ID already exists");
     };
@@ -220,7 +220,7 @@ actor {
   };
 
   public shared ({ caller }) func createExpenses(expenses : [Expense]) : async () {
-    requireUser(caller);
+    requireAdmin(caller);
     for (expense in expenses.values()) {
       if (expenseMap.containsKey(expense.id)) {
         Runtime.trap("Expense ID already exists");
@@ -230,7 +230,7 @@ actor {
   };
 
   public shared ({ caller }) func deleteExpense(eid : ExpenseId) : async () {
-    requireUser(caller);
+    requireAdmin(caller);
     if (not expenseMap.containsKey(eid)) {
       Runtime.trap("Expense not found");
     };
@@ -243,7 +243,7 @@ actor {
   };
 
   public shared ({ caller }) func syncExpenses(expenses : [Expense]) : async () {
-    requireUser(caller);
+    requireAdmin(caller);
     for (expense in expenses.values()) {
       if (expenseMap.containsKey(expense.id)) {
         Runtime.trap("Expense ID already exists during sync");
@@ -255,6 +255,12 @@ actor {
   func requireUser(caller : Principal) {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can perform this action");
+    };
+  };
+
+  func requireAdmin(caller : Principal) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can perform this action");
     };
   };
 };

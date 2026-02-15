@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 29,
+  "projectStateVersion": 45,
   "summary": "Frontline Distributors: prioritize delivering the working website/PWA experience matching the previously working Draft Version 5; deprioritize Android APK packaging/distribution. Core inventory, billing, customers, credits, reporting and offline-first sync remain in scope.",
   "architectural_notes": [
     "Android app in Kotlin using MVVM architecture",
@@ -14,7 +14,11 @@
   "known_issues": [
     "Draft and live screens are empty/blank after deployment; likely due to wrapper APK failing to load the deployed PWA URL (e.g., https://frontline-distributors.ic0.app) or app requiring login/profile setup before rendering UI.",
     "Regression after Draft Version 5: website/PWA behavior degraded; needs rollback or rebuild to match Draft v5 working state.",
-    "Popup/modal dialogs have transparent background/backdrop, making options not visible/readable when a popup opens."
+    "Popup/modal backgrounds are transparent; need opaque overlay/surface backgrounds so options/text remain readable.",
+    "Draft Version 16 does not open; it gets stuck on an infinite loading spinner (not a blank page), suggesting a service worker/caching or build/deployment hang.",
+    "On mobile, the three-dot (kebab) options menu on the left is still transparent; menu surface/overlay needs to be opaque so items (e.g., Balance) are readable.",
+    "Draft Version 18 hits Startup Timeout in phase 'Fetching user profile' (Authenticated: Yes, Profile fetched: No); likely service worker/cache or backend/profile-fetch issue. Temporary workaround: open with ?nosw=1 and/or use in-app 'Reset cached app'.",
+    "On mobile, the left-top hamburger (three lines) navigation menu/drawer background is not opaque; menu surface/overlay needs to be fully opaque so items (Dashboard/Products/Billing) are readable."
   ],
   "isFixRequest": true,
   "existing_features": [
@@ -307,6 +311,142 @@
         "REQ-44"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-main-app-layout-to-be-responsive-on-mobile-screens-replace-the-always-visible-left-sidenav-with-a-mobile-navigation-pattern-e-g-a-hamburger-triggered-sheet-drawer-or-a-bottom-navigation-and-ensure-the-content-area-uses-mobile-appropriate-spacing-without-horizontal-overflow",
+      "title": "Update the main app layout to be responsive on mobile screens: replace the always-visible left SideNav with a mobile navigation pattern (e.g., a hamburger-triggered sheet/drawer or a bottom navigation) and ensure the content area uses mobile-appropriate spacing without horizontal overflow.",
+      "reqIds": [
+        "REQ-45"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-topbar-responsive-for-mobile-ensure-the-header-content-title-sync-indicator-install-button-user-info-logout-wraps-or-collapses-gracefully-so-it-does-not-overflow-and-remains-usable-on-small-screens",
+      "title": "Make TopBar responsive for mobile: ensure the header content (title, sync indicator, install button, user info, logout) wraps or collapses gracefully so it does not overflow and remains usable on small screens.",
+      "reqIds": [
+        "REQ-46"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-list-table-based-screens-to-be-mobile-friendly-by-providing-a-responsive-alternative-to-wide-tables-e-g-stacked-card-rows-on-small-screens-and-or-horizontal-scroll-with-clear-affordance-for-products-customers-credits-reports-and-any-other-table-based-views",
+      "title": "Update list/table-based screens to be mobile-friendly by providing a responsive alternative to wide tables (e.g., stacked card rows on small screens and/or horizontal scroll with clear affordance) for Products, Customers, Credits, Reports, and any other table-based views.",
+      "reqIds": [
+        "REQ-47"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-the-billing-screen-responsive-ensure-the-two-column-layout-becomes-a-single-column-flow-on-small-screens-form-controls-are-usable-on-touch-devices-and-bill-line-items-recent-bills-render-without-overflow",
+      "title": "Make the Billing screen responsive: ensure the two-column layout becomes a single-column flow on small screens, form controls are usable on touch devices, and bill line items/recent bills render without overflow.",
+      "reqIds": [
+        "REQ-48"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-dialogs-used-across-the-app-e-g-productdialog-customerdialog-add-expense-dialog-are-mobile-friendly-content-fits-within-the-viewport-forms-are-scrollable-when-needed-and-action-buttons-remain-reachable-without-being-cut-off",
+      "title": "Ensure dialogs used across the app (e.g., ProductDialog, CustomerDialog, Add Expense dialog) are mobile-friendly: content fits within the viewport, forms are scrollable when needed, and action buttons remain reachable without being cut off.",
+      "reqIds": [
+        "REQ-49"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-ui-transparency-by-ensuring-all-overlay-and-popup-surfaces-render-with-fully-opaque-backgrounds-no-translucency-and-readable-contrast-across-the-app-in-both-light-and-dark-themes-this-must-cover-radix-shadcn-primitives-used-in-the-app-at-minimum-dialog-alertdialog-sheet-select-dropdownmenu-and-any-other-radix-popover-style-surfaces-present-such-as-popover-contextmenu-menubar-tooltip-hovercard-command-so-that-when-any-popup-opens-the-surface-and-its-options-text-are-clearly-readable",
+      "title": "Fix UI transparency by ensuring all overlay and popup surfaces render with fully opaque backgrounds (no translucency) and readable contrast across the app, in both light and dark themes. This must cover Radix/shadcn primitives used in the app (at minimum: Dialog/AlertDialog, Sheet, Select, DropdownMenu; and any other Radix popover-style surfaces present such as Popover, ContextMenu, Menubar, Tooltip, HoverCard, Command) so that when any popup opens, the surface and its options/text are clearly readable.",
+      "reqIds": [
+        "REQ-50"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-startup-watchdog-so-the-app-never-stays-on-the-initial-loading-spinner-indefinitely-if-initialization-or-authenticated-profile-loading-exceeds-a-reasonable-timeout-automatically-show-a-clear-error-recovery-screen-instead-of-continuing-to-spin",
+      "title": "Add a startup watchdog so the app never stays on the initial loading spinner indefinitely; if initialization or authenticated profile-loading exceeds a reasonable timeout, automatically show a clear error/recovery screen instead of continuing to spin.",
+      "reqIds": [
+        "REQ-51"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-provide-an-in-app-user-triggered-reset-cached-app-recovery-that-also-clears-pwa-service-worker-caches-to-resolve-stuck-load-cases-caused-by-cached-assets-without-requiring-users-to-manually-open-browser-settings",
+      "title": "Provide an in-app, user-triggered “reset cached app” recovery that also clears PWA/service-worker caches to resolve stuck-load cases caused by cached assets, without requiring users to manually open browser settings.",
+      "reqIds": [
+        "REQ-52"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-service-worker-safe-mode-toggle-via-url-parameter-so-draft-builds-can-be-opened-without-service-worker-interference-e-g-nosw-1-and-ensure-the-ui-instructs-users-how-to-use-it-when-stuck-loading",
+      "title": "Add a service-worker safe mode toggle via URL parameter so Draft builds can be opened without service worker interference (e.g., `?nosw=1`), and ensure the UI instructs users how to use it when stuck loading.",
+      "reqIds": [
+        "REQ-53"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-improve-diagnostics-for-the-stuck-spinner-case-by-capturing-and-displaying-in-the-recovery-error-view-the-current-startup-phase-e-g-initializing-identity-vs-fetching-profile-so-the-failure-mode-is-actionable",
+      "title": "Improve diagnostics for the stuck spinner case by capturing and displaying (in the recovery/error view) the current startup phase (e.g., initializing identity vs. fetching profile) so the failure mode is actionable.",
+      "reqIds": [
+        "REQ-54"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-remaining-mobile-transparency-issue-where-the-left-side-three-dot-kebab-options-menu-is-still-transparent-ensure-the-menu-surface-and-any-overlay-backdrop-are-fully-opaque-with-readable-contrast-in-both-light-and-dark-themes-matching-the-rest-of-the-app-s-popup-menu-styling",
+      "title": "Fix the remaining mobile transparency issue where the left-side three-dot (kebab) options menu is still transparent. Ensure the menu surface and any overlay/backdrop are fully opaque with readable contrast in both light and dark themes, matching the rest of the app’s popup/menu styling.",
+      "reqIds": [
+        "REQ-55"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-trigger-a-fresh-rebuild-and-redeploy-of-the-current-draft-and-provide-a-new-shareable-draft-url-link-do-not-reuse-the-previous-draft-link-so-users-can-open-the-app-without-stale-deployment-artifacts",
+      "title": "Trigger a fresh rebuild and redeploy of the current Draft, and provide a new shareable Draft URL/link (do not reuse the previous draft link) so users can open the app without stale deployment artifacts.",
+      "reqIds": [
+        "REQ-56"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-bump-the-pwa-service-worker-cache-version-to-force-clients-to-fetch-fresh-assets-after-the-rebuild-reducing-the-chance-of-getting-stuck-on-the-startup-timeout-screen-due-to-stale-cached-bundles",
+      "title": "Bump the PWA service worker cache version to force clients to fetch fresh assets after the rebuild, reducing the chance of getting stuck on the Startup Timeout screen due to stale cached bundles.",
+      "reqIds": [
+        "REQ-57"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-the-mobile-hamburger-top-left-three-lines-navigation-drawer-menu-fully-opaque-on-mobile-so-that-the-drawer-surface-and-its-overlay-backdrop-are-readable-e-g-dashboard-products-billing-list-in-both-light-and-dark-themes",
+      "title": "Make the mobile hamburger (top-left three lines) navigation drawer/menu fully opaque on mobile so that the drawer surface and its overlay backdrop are readable (e.g., Dashboard/Products/Billing list) in both light and dark themes.",
+      "reqIds": [
+        "REQ-58"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-the-mobile-hamburger-navigation-drawer-radix-sheet-used-by-frontend-src-components-mobilenavdrawer-tsx-and-its-overlay-backdrop-fully-opaque-on-mobile-in-both-light-and-dark-themes-so-the-navigation-items-are-always-readable-with-no-translucency",
+      "title": "Make the mobile hamburger navigation drawer (Radix Sheet used by `frontend/src/components/MobileNavDrawer.tsx`) and its overlay/backdrop fully opaque on mobile, in both light and dark themes, so the navigation items are always readable with no translucency.",
+      "reqIds": [
+        "REQ-59"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-mobile-hamburger-navigation-drawer-so-that-both-the-drawer-surface-and-its-overlay-backdrop-are-fully-opaque-no-translucency-and-the-navigation-items-are-always-readable-on-mobile-in-both-light-and-dark-themes",
+      "title": "Fix the mobile hamburger navigation drawer so that both the drawer surface and its overlay/backdrop are fully opaque (no translucency) and the navigation items are always readable on mobile, in both light and dark themes.",
+      "reqIds": [
+        "REQ-60"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-force-clients-to-pick-up-the-fresh-build-assets-after-redeploy-by-bumping-the-app-build-identifier-and-the-pwa-service-worker-cache-version",
+      "title": "Force clients to pick up the fresh build assets after redeploy by bumping the app build identifier and the PWA service worker cache version.",
+      "reqIds": [
+        "REQ-61"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -446,6 +586,38 @@
       "id": "AR-23",
       "summary": "Restore/rebuild the deployed website/PWA to match the behavior and UI of the previously working Draft Version 5 (fix regressions introduced after Draft v5).",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-24",
+      "summary": "Update the website/PWA UI to be mobile-friendly/responsive (suitable mobile layout while keeping the same overall design)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Change popup/modal backgrounds/overlays to be opaque (fix transparency so content is readable) across the website/PWA UI",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-26",
+      "summary": "Rebuild/redeploy the current draft and provide a new shareable draft link to bypass possible cached/stale deployment artifacts.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-27",
+      "summary": "Fix mobile hamburger navigation drawer transparency: make the drawer background and its overlay/backdrop fully opaque so menu items are always readable; then deploy a fresh version and provide a new preview link.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Deploy a fresh Draft build of the app and provide a new shareable preview link (do not reuse the previous draft link).",
+      "reqIds": [
+        "REQ-62"
+      ],
       "status": "pending"
     }
   ],

@@ -8,7 +8,7 @@ interface SideNavProps {
   onNavigate: (screen: ScreenId) => void;
 }
 
-const navItems: Array<{ id: ScreenId; label: string; icon: any }> = [
+export const navItems: Array<{ id: ScreenId; label: string; icon: any }> = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'products', label: 'Products', icon: Package },
   { id: 'billing', label: 'Billing', icon: FileText },

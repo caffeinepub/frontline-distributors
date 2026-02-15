@@ -2,12 +2,16 @@ import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useGetCallerUserProfile } from '../hooks/useQueries';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Download } from 'lucide-react';
+import { LogOut, User, Download, Menu } from 'lucide-react';
 import SyncIndicator from './SyncIndicator';
 import { toast } from 'sonner';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 
-export default function TopBar() {
+interface TopBarProps {
+  onMobileMenuClick?: () => void;
+}
+
+export default function TopBar({ onMobileMenuClick }: TopBarProps) {
   const { clear, identity } = useInternetIdentity();
   const { data: userProfile } = useGetCallerUserProfile();
   const queryClient = useQueryClient();
@@ -36,35 +40,49 @@ export default function TopBar() {
 
   return (
     <header className="border-b bg-card">
-      <div className="flex h-16 items-center justify-between px-6">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold">Frontline Distributors</h1>
+      <div className="flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6 gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          {/* Mobile Menu Button */}
+          {onMobileMenuClick && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onMobileMenuClick}
+              className="md:hidden p-2"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          )}
+          <h1 className="text-base sm:text-lg md:text-xl font-bold truncate">Frontline Distributors</h1>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-shrink-0">
           {/* Sync Indicator */}
-          <SyncIndicator />
+          <div className="hidden sm:block">
+            <SyncIndicator />
+          </div>
           
-          {/* Install App Button - PWA only */}
+          {/* Install App Button - PWA only, hidden on small screens */}
           {isInstallable && (
             <Button
               variant="outline"
               size="sm"
               onClick={handleInstall}
-              className="gap-2"
+              className="hidden lg:flex gap-2"
             >
               <Download className="h-4 w-4" />
-              Add to Home Screen
+              <span className="hidden xl:inline">Add to Home Screen</span>
+              <span className="xl:hidden">Install</span>
             </Button>
           )}
           
-          {/* User Info */}
+          {/* User Info - Compact on mobile */}
           {userProfile && (
-            <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <div className="text-sm">
-                <div className="font-medium">{userProfile.name}</div>
-                <div className="text-xs text-muted-foreground">{userProfile.role}</div>
+            <div className="hidden sm:flex items-center gap-2 rounded-lg bg-muted px-2 py-1.5 sm:px-3 sm:py-2">
+              <User className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+              <div className="text-xs sm:text-sm min-w-0">
+                <div className="font-medium truncate max-w-[80px] sm:max-w-none">{userProfile.name}</div>
+                <div className="text-[10px] sm:text-xs text-muted-foreground hidden md:block">{userProfile.role}</div>
               </div>
             </div>
           )}
@@ -74,10 +92,10 @@ export default function TopBar() {
             variant="outline"
             size="sm"
             onClick={handleLogout}
-            className="gap-2"
+            className="gap-1 sm:gap-2 px-2 sm:px-3"
           >
-            <LogOut className="h-4 w-4" />
-            Logout
+            <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Logout</span>
           </Button>
         </div>
       </div>

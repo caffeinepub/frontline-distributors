@@ -1,22 +1,64 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T17:15:17.292Z",
+  "generatedAt": "2026-02-15T23:49:03.553Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 0,
-    "implemented": 0,
-    "items": []
+    "total": 3,
+    "implemented": 2,
+    "items": [
+      {
+        "id": "REQ-60",
+        "summary": "Fix the mobile hamburger navigation drawer so that both the drawer surface and its overlay/backdrop are fully opaque (no translucency) and the navigation items are always readable on mobile, in both light and dark themes.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/MobileNavDrawer.tsx",
+          "frontend/src/index.css"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/MobileNavDrawer.tsx",
+          "frontend/src/index.css"
+        ]
+      },
+      {
+        "id": "REQ-61",
+        "summary": "Force clients to pick up the fresh build assets after redeploy by bumping the app build identifier and the PWA service worker cache version.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/buildInfo.ts",
+          "frontend/public/sw.js",
+          "frontend/index.html"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/buildInfo.ts",
+          "frontend/public/sw.js",
+          "frontend/index.html"
+        ]
+      },
+      {
+        "id": "REQ-62",
+        "summary": "Deploy a fresh Draft build of the app and provide a new shareable preview link (do not reuse the previous draft link).",
+        "status": "missing",
+        "plannedFiles": [
+          "frontend/DEPLOY_DRAFT_PREVIEW.md"
+        ],
+        "matchedFiles": []
+      }
+    ]
   },
   "changedFiles": [
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/index.html",
+    "frontend/public/sw.js",
+    "frontend/src/components/MobileNavDrawer.tsx",
     "frontend/src/index.css",
+    "frontend/src/utils/buildInfo.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

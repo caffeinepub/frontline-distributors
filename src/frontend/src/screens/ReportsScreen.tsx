@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Plus, Trash2, TrendingUp, DollarSign, Calendar, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, TrendingUp, DollarSign, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import ResponsiveTableCards, { CardRow } from '../components/ResponsiveTableCards';
 import type { Expense } from '../backend';
 import { toast } from 'sonner';
 import { getDailySales, getDateRangeSummary, calculateProfit } from '../utils/reporting';
@@ -123,31 +124,69 @@ export default function ReportsScreen() {
     }
   };
 
+  const renderDailySalesCard = (day: ReturnType<typeof getDailySales>[0]) => (
+    <Card key={day.date}>
+      <CardContent className="p-4 space-y-2">
+        <h3 className="font-semibold text-base">{new Date(day.date).toLocaleDateString()}</h3>
+        <div className="space-y-1.5">
+          <CardRow label="Bills" value={day.billCount} />
+          <CardRow label="Gross Sales" value={`₹${day.totalSales.toLocaleString()}`} />
+          <CardRow label="Credits" value={`₹${day.totalCredits.toLocaleString()}`} className="text-amber-600" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const renderExpenseCard = (expense: Expense) => (
+    <Card key={expense.id.toString()}>
+      <CardContent className="p-4 space-y-3">
+        <div className="flex justify-between items-start gap-2">
+          <div className="min-w-0 flex-1">
+            <h3 className="font-semibold text-base truncate">{expense.description}</h3>
+            <p className="text-xs text-muted-foreground">{expense.category}</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDeleteExpense(expense.id)}
+            className="flex-shrink-0"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="space-y-1.5">
+          <CardRow label="Amount" value={`₹${Number(expense.amount).toLocaleString()}`} className="font-semibold" />
+          <CardRow label="Date" value={new Date(Number(expense.timestamp)).toLocaleDateString()} />
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Reports</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Reports</h2>
+        <p className="text-sm sm:text-base text-muted-foreground">
           View sales, profit, expenses, and business insights
         </p>
       </div>
 
-      <Tabs defaultValue="summary" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="summary">Summary</TabsTrigger>
-          <TabsTrigger value="daily">Daily Sales</TabsTrigger>
-          <TabsTrigger value="profit">Profit</TabsTrigger>
-          <TabsTrigger value="expenses">Expenses</TabsTrigger>
+      <Tabs defaultValue="summary" className="space-y-4 sm:space-y-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+          <TabsTrigger value="summary" className="text-xs sm:text-sm">Summary</TabsTrigger>
+          <TabsTrigger value="daily" className="text-xs sm:text-sm">Daily Sales</TabsTrigger>
+          <TabsTrigger value="profit" className="text-xs sm:text-sm">Profit</TabsTrigger>
+          <TabsTrigger value="expenses" className="text-xs sm:text-sm">Expenses</TabsTrigger>
         </TabsList>
 
         {/* Summary Tab */}
-        <TabsContent value="summary" className="space-y-6">
+        <TabsContent value="summary" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Date Range</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="start-date">Start Date</Label>
                   <Input
@@ -170,14 +209,14 @@ export default function ReportsScreen() {
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">₹{summary.totalSales.toLocaleString()}</div>
+                <div className="text-xl sm:text-2xl font-bold">₹{summary.totalSales.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">
                   {summary.billCount} bills
                 </p>
@@ -190,7 +229,7 @@ export default function ReportsScreen() {
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-destructive">₹{summary.totalDiscounts.toLocaleString()}</div>
+                <div className="text-xl sm:text-2xl font-bold text-destructive">₹{summary.totalDiscounts.toLocaleString()}</div>
               </CardContent>
             </Card>
 
@@ -200,7 +239,7 @@ export default function ReportsScreen() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">₹{summary.totalGST.toLocaleString()}</div>
+                <div className="text-xl sm:text-2xl font-bold">₹{summary.totalGST.toLocaleString()}</div>
               </CardContent>
             </Card>
 
@@ -210,7 +249,7 @@ export default function ReportsScreen() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-amber-600">₹{summary.totalCredits.toLocaleString()}</div>
+                <div className="text-xl sm:text-2xl font-bold text-amber-600">₹{summary.totalCredits.toLocaleString()}</div>
               </CardContent>
             </Card>
 
@@ -220,7 +259,7 @@ export default function ReportsScreen() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-destructive">₹{summary.totalExpenses.toLocaleString()}</div>
+                <div className="text-xl sm:text-2xl font-bold text-destructive">₹{summary.totalExpenses.toLocaleString()}</div>
               </CardContent>
             </Card>
 
@@ -230,7 +269,7 @@ export default function ReportsScreen() {
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className={`text-2xl font-bold ${profitData.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <div className={`text-xl sm:text-2xl font-bold ${profitData.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   ₹{profitData.netProfit.toLocaleString()}
                 </div>
                 {profitData.hasMissingCosts && (
@@ -244,7 +283,7 @@ export default function ReportsScreen() {
         </TabsContent>
 
         {/* Daily Sales Tab */}
-        <TabsContent value="daily" className="space-y-6">
+        <TabsContent value="daily" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Daily Sales Breakdown</CardTitle>
@@ -253,33 +292,47 @@ export default function ReportsScreen() {
               {dailySales.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">No sales data available</p>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead className="text-right">Bills</TableHead>
-                      <TableHead className="text-right">Gross Sales</TableHead>
-                      <TableHead className="text-right">Credits</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {dailySales.map((day) => (
-                      <TableRow key={day.date}>
-                        <TableCell>{new Date(day.date).toLocaleDateString()}</TableCell>
-                        <TableCell className="text-right">{day.billCount}</TableCell>
-                        <TableCell className="text-right">₹{day.totalSales.toLocaleString()}</TableCell>
-                        <TableCell className="text-right text-amber-600">₹{day.totalCredits.toLocaleString()}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <>
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead className="text-right">Bills</TableHead>
+                          <TableHead className="text-right">Gross Sales</TableHead>
+                          <TableHead className="text-right">Credits</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {dailySales.map((day) => (
+                          <TableRow key={day.date}>
+                            <TableCell>{new Date(day.date).toLocaleDateString()}</TableCell>
+                            <TableCell className="text-right">{day.billCount}</TableCell>
+                            <TableCell className="text-right">₹{day.totalSales.toLocaleString()}</TableCell>
+                            <TableCell className="text-right text-amber-600">₹{day.totalCredits.toLocaleString()}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Mobile Card View */}
+                  <div className="md:hidden">
+                    <ResponsiveTableCards
+                      data={dailySales}
+                      renderCard={renderDailySalesCard}
+                      emptyMessage="No sales data available"
+                    />
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
         {/* Profit Tab */}
-        <TabsContent value="profit" className="space-y-6">
+        <TabsContent value="profit" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Profit Analysis</CardTitle>
@@ -288,7 +341,7 @@ export default function ReportsScreen() {
               {profitData.hasMissingCosts && (
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
+                  <AlertDescription className="text-xs sm:text-sm">
                     Some products are missing cost data. Profit calculations may be incomplete. Please update product costs in the Products screen.
                   </AlertDescription>
                 </Alert>
@@ -296,30 +349,30 @@ export default function ReportsScreen() {
 
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                  <span className="font-medium">Total Revenue</span>
-                  <span className="text-lg font-bold">₹{profitData.totalRevenue.toLocaleString()}</span>
+                  <span className="font-medium text-sm sm:text-base">Total Revenue</span>
+                  <span className="text-base sm:text-lg font-bold">₹{profitData.totalRevenue.toLocaleString()}</span>
                 </div>
 
                 <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                  <span className="font-medium">Cost of Goods Sold (COGS)</span>
-                  <span className="text-lg font-bold text-destructive">₹{profitData.totalCOGS.toLocaleString()}</span>
+                  <span className="font-medium text-sm sm:text-base">Cost of Goods Sold (COGS)</span>
+                  <span className="text-base sm:text-lg font-bold text-destructive">₹{profitData.totalCOGS.toLocaleString()}</span>
                 </div>
 
                 <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                  <span className="font-medium">Gross Profit</span>
-                  <span className={`text-lg font-bold ${profitData.grossProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className="font-medium text-sm sm:text-base">Gross Profit</span>
+                  <span className={`text-base sm:text-lg font-bold ${profitData.grossProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     ₹{profitData.grossProfit.toLocaleString()}
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                  <span className="font-medium">Total Expenses</span>
-                  <span className="text-lg font-bold text-destructive">₹{profitData.totalExpenses.toLocaleString()}</span>
+                  <span className="font-medium text-sm sm:text-base">Total Expenses</span>
+                  <span className="text-base sm:text-lg font-bold text-destructive">₹{profitData.totalExpenses.toLocaleString()}</span>
                 </div>
 
                 <div className="flex justify-between items-center p-3 bg-primary/10 rounded-lg border-2 border-primary">
-                  <span className="font-bold text-lg">Net Profit</span>
-                  <span className={`text-2xl font-bold ${profitData.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className="font-bold text-base sm:text-lg">Net Profit</span>
+                  <span className={`text-xl sm:text-2xl font-bold ${profitData.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     ₹{profitData.netProfit.toLocaleString()}
                   </span>
                 </div>
@@ -329,12 +382,12 @@ export default function ReportsScreen() {
         </TabsContent>
 
         {/* Expenses Tab */}
-        <TabsContent value="expenses" className="space-y-6">
+        <TabsContent value="expenses" className="space-y-4 sm:space-y-6">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Expenses</CardTitle>
-              <Button onClick={() => setExpenseDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+              <CardTitle>Expense List</CardTitle>
+              <Button onClick={() => setExpenseDialogOpen(true)} size="sm" className="gap-2 w-full sm:w-auto">
+                <Plus className="h-4 w-4" />
                 Add Expense
               </Button>
             </CardHeader>
@@ -342,40 +395,50 @@ export default function ReportsScreen() {
               {expenses.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">No expenses recorded</p>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
-                      <TableHead className="w-12"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {[...expenses]
-                      .sort((a, b) => Number(b.timestamp) - Number(a.timestamp))
-                      .map((expense) => (
-                        <TableRow key={expense.id.toString()}>
-                          <TableCell>
-                            {new Date(Number(expense.timestamp)).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>{expense.category}</TableCell>
-                          <TableCell>{expense.description}</TableCell>
-                          <TableCell className="text-right">₹{Number(expense.amount).toLocaleString()}</TableCell>
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteExpense(expense.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
+                <>
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Description</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Amount</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {expenses.map((expense) => (
+                          <TableRow key={expense.id.toString()}>
+                            <TableCell className="font-medium">{expense.description}</TableCell>
+                            <TableCell>{expense.category}</TableCell>
+                            <TableCell>₹{Number(expense.amount).toLocaleString()}</TableCell>
+                            <TableCell>{new Date(Number(expense.timestamp)).toLocaleDateString()}</TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteExpense(expense.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Mobile Card View */}
+                  <div className="md:hidden">
+                    <ResponsiveTableCards
+                      data={expenses}
+                      renderCard={renderExpenseCard}
+                      emptyMessage="No expenses recorded"
+                    />
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
@@ -384,33 +447,18 @@ export default function ReportsScreen() {
 
       {/* Add Expense Dialog */}
       <Dialog open={expenseDialogOpen} onOpenChange={setExpenseDialogOpen}>
-        <DialogContent className="bg-background text-foreground border-border">
+        <DialogContent className="bg-background text-foreground border-border max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Add Expense</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleCreateExpense} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="expense-category">Category</Label>
-              <Select value={expenseCategory} onValueChange={setExpenseCategory}>
-                <SelectTrigger id="expense-category">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-popover text-popover-foreground border-border">
-                  {EXPENSE_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
             <div className="space-y-2">
               <Label htmlFor="expense-description">Description</Label>
               <Input
                 id="expense-description"
                 value={expenseDescription}
                 onChange={(e) => setExpenseDescription(e.target.value)}
-                placeholder="Enter description"
+                placeholder="Enter expense description"
               />
             </div>
             <div className="space-y-2">
@@ -424,11 +472,28 @@ export default function ReportsScreen() {
                 placeholder="0.00"
               />
             </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setExpenseDialogOpen(false)}>
+            <div className="space-y-2">
+              <Label htmlFor="expense-category">Category</Label>
+              <Select value={expenseCategory} onValueChange={setExpenseCategory}>
+                <SelectTrigger id="expense-category">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover text-popover-foreground border-border">
+                  {EXPENSE_CATEGORIES.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button type="button" variant="outline" onClick={() => setExpenseDialogOpen(false)} className="w-full sm:w-auto">
                 Cancel
               </Button>
-              <Button type="submit">Add Expense</Button>
+              <Button type="submit" className="w-full sm:w-auto">
+                Add Expense
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

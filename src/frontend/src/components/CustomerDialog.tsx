@@ -94,7 +94,7 @@ export default function CustomerDialog({ open, onOpenChange, customer }: Custome
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-background text-foreground border-border">
+      <DialogContent className="bg-background text-foreground border-border max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{customer ? 'Edit Customer' : 'Add Customer'}</DialogTitle>
         </DialogHeader>
@@ -127,11 +127,11 @@ export default function CustomerDialog({ open, onOpenChange, customer }: Custome
               rows={3}
             />
           </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button type="submit">
+            <Button type="submit" className="w-full sm:w-auto">
               {customer ? 'Update' : 'Create'}
             </Button>
           </DialogFooter>

@@ -8,41 +8,44 @@
         <meta name='apple-mobile-web-app-status-bar-style' content='black-translucent' />
         <meta name='apple-mobile-web-app-title' content='Frontline' />
         <link rel='manifest' href='/manifest.webmanifest' />
-        <link rel='apple-touch-icon' href='/assets/generated/app-icon.dim_192x192.png' />
+        <link rel='apple-touch-icon' href='/assets/generated/app-icon.dim_512x512.png' />
+        <link rel='icon' type='image/png' sizes='192x192' href='/assets/generated/app-icon.dim_192x192.png' />
+        <link rel='icon' type='image/png' sizes='512x512' href='/assets/generated/app-icon.dim_512x512.png' />
         <title>Frontline Distributors</title>
-        <script>
-            // Register service worker for PWA offline support
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/sw.js')
-                        .then(registration => {
-                            console.log('SW registered:', registration);
-                            
-                            // Check for updates
-                            registration.addEventListener('updatefound', () => {
-                                const newWorker = registration.installing;
-                                if (newWorker) {
-                                    newWorker.addEventListener('statechange', () => {
-                                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                            // New service worker available, prompt user to reload
-                                            console.log('New service worker available');
-                                            if (confirm('A new version is available. Reload to update?')) {
-                                                window.location.reload();
-                                            }
-                                        }
-                                    });
-                                }
-                            });
-                        })
-                        .catch(error => {
-                            console.log('SW registration failed:', error);
-                        });
-                });
-            }
-        </script>
     </head>
     <body>
         <div id='root'></div>
         <script type='module' src='/src/main.tsx'></script>
+        <script>
+            // Service worker registration with build ID for cache busting
+            if ('serviceWorker' in navigator) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const noSW = urlParams.get('nosw') === '1';
+                
+                if (noSW) {
+                    console.log('[SW] Service worker disabled via ?nosw=1 parameter');
+                    navigator.serviceWorker.getRegistrations().then(registrations => {
+                        registrations.forEach(reg => reg.unregister());
+                    });
+                } else {
+                    const buildId = '22';
+                    const swUrl = `/sw.js?buildId=${buildId}`;
+                    
+                    window.addEventListener('load', () => {
+                        navigator.serviceWorker.register(swUrl)
+                            .then(registration => {
+                                console.log('[SW] Service worker registered successfully with build ID:', buildId);
+                                
+                                registration.addEventListener('updatefound', () => {
+                                    console.log('[SW] Update found, new service worker installing...');
+                                });
+                            })
+                            .catch(error => {
+                                console.error('[SW] Service worker registration failed:', error);
+                            });
+                    });
+                }
+            }
+        </script>
     </body>
 </html>

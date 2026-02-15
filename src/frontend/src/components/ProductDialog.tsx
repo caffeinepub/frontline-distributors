@@ -145,7 +145,7 @@ export default function ProductDialog({ open, onOpenChange, product }: ProductDi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-background text-foreground border-border">
+      <DialogContent className="bg-background text-foreground border-border max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{product ? 'Edit Product' : 'Add Product'}</DialogTitle>
         </DialogHeader>
@@ -207,7 +207,7 @@ export default function ProductDialog({ open, onOpenChange, product }: ProductDi
                 className="flex-1"
               />
               <Select value={stockUnit} onValueChange={(value: 'pieces' | 'cases') => setStockUnit(value)}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-28 sm:w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-popover text-popover-foreground border-border">
@@ -222,11 +222,11 @@ export default function ProductDialog({ open, onOpenChange, product }: ProductDi
               </p>
             )}
           </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button type="submit">
+            <Button type="submit" className="w-full sm:w-auto">
               {product ? 'Update' : 'Create'}
             </Button>
           </DialogFooter>
