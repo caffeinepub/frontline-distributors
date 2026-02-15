@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Provide an Android APK build option that wraps the existing deployed PWA so it can be installed and run on Android devices.
+**Goal:** Regenerate a fresh Android release APK for the existing PWA wrapper and provide a new, working download link.
 
 **Planned changes:**
-- Add a buildable Android wrapper project or build pipeline in the repo that packages the deployed PWA URL into an installable APK.
-- Configure the APK to launch the app in a full-screen/standalone WebView experience pointing to the deployed app.
-- Produce a downloadable APK artifact (debug or release) as part of the build, with documented output path and naming.
-- Add a short README section describing prerequisites and steps to build the APK locally and install it on an Android device.
+- Bump the Android wrapper app versionCode and versionName in `frontend/android/app/build.gradle` so the new APK is distinguishable from prior builds.
+- Verify `pwa_url` in `frontend/android/app/src/main/res/values/strings.xml` points to a valid deployed PWA URL (not the placeholder) for the release build.
+- Produce a new Android release APK artifact from `frontend/android` and publish a reachable download URL (not reusing the previous broken link unless verified working).
 
-**User-visible outcome:** Users can download an APK, install it on an Android device, and open the app directly in a standalone full-screen experience that loads the same deployed web app.
+**User-visible outcome:** A new Android release APK is available via a working download link and, when installed, it opens and successfully loads the deployed PWA.

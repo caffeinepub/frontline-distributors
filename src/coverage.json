@@ -1,80 +1,68 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T11:44:36.415Z",
+  "generatedAt": "2026-02-15T11:58:24.863Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
-    "implemented": 1,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-24",
-        "summary": "Add an Android APK packaging option for the existing PWA so the user can download and install the app on an Android device (wrap the deployed web app into an APK and provide a release artifact).",
+        "id": "REQ-25",
+        "summary": "Generate a fresh Android release APK for the existing PWA wrapper project (frontend/android) and publish it as a new downloadable release artifact, because the previous download link is unreachable.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/android/.gitignore",
           "frontend/android/README.md",
-          "frontend/android/gradle.properties",
-          "frontend/android/settings.gradle",
-          "frontend/android/build.gradle",
-          "frontend/android/gradlew",
-          "frontend/android/gradlew.bat",
-          "frontend/android/gradle/wrapper/gradle-wrapper.properties",
-          "frontend/android/app/build.gradle",
-          "frontend/android/app/src/main/AndroidManifest.xml",
-          "frontend/android/app/src/main/java/com/frontline/wrapper/MainActivity.kt",
-          "frontend/android/app/src/main/res/values/strings.xml",
-          "frontend/android/app/src/main/res/values/styles.xml",
-          "frontend/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
-          "frontend/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
-          "frontend/android/app/src/main/res/mipmap-hdpi/ic_launcher.png",
-          "frontend/android/app/src/main/res/mipmap-mdpi/ic_launcher.png",
-          "frontend/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
-          "frontend/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
-          "frontend/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
+          "frontend/android/scripts/build-release-apk.sh",
+          "frontend/android/app/build.gradle"
         ],
         "matchedFiles": [
-          "frontend/android/.gitignore",
           "frontend/android/README.md",
-          "frontend/android/gradle.properties",
-          "frontend/android/settings.gradle",
-          "frontend/android/build.gradle",
-          "frontend/android/gradle/wrapper/gradle-wrapper.properties",
-          "frontend/android/app/build.gradle",
-          "frontend/android/app/src/main/AndroidManifest.xml",
-          "frontend/android/app/src/main/java/com/frontline/wrapper/MainActivity.kt",
+          "frontend/android/scripts/build-release-apk.sh",
+          "frontend/android/app/build.gradle"
+        ]
+      },
+      {
+        "id": "REQ-26",
+        "summary": "Bump the Android wrapper app version (versionCode and versionName) so the regenerated APK is distinguishable from prior builds.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/android/app/build.gradle"
+        ],
+        "matchedFiles": [
+          "frontend/android/app/build.gradle"
+        ]
+      },
+      {
+        "id": "REQ-27",
+        "summary": "Verify the Android wrapper is configured to load the deployed PWA URL via the Android string resource pwa_url, and ensure the release build uses a valid, deployed URL value (not the placeholder).",
+        "status": "implemented",
+        "plannedFiles": [
           "frontend/android/app/src/main/res/values/strings.xml",
-          "frontend/android/app/src/main/res/values/styles.xml",
-          "frontend/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
-          "frontend/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml"
+          "frontend/android/app/build.gradle",
+          "frontend/android/gradle.properties"
+        ],
+        "matchedFiles": [
+          "frontend/android/app/src/main/res/values/strings.xml",
+          "frontend/android/app/build.gradle",
+          "frontend/android/gradle.properties"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/android/.gitignore",
     "frontend/android/README.md",
     "frontend/android/app/build.gradle",
-    "frontend/android/app/proguard-rules.pro",
-    "frontend/android/app/src/main/AndroidManifest.xml",
-    "frontend/android/app/src/main/java/com/frontline/wrapper/MainActivity.kt",
-    "frontend/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
-    "frontend/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
-    "frontend/android/app/src/main/res/values/colors.xml",
     "frontend/android/app/src/main/res/values/strings.xml",
-    "frontend/android/app/src/main/res/values/styles.xml",
-    "frontend/android/build.gradle",
     "frontend/android/gradle.properties",
-    "frontend/android/gradle/wrapper/gradle-wrapper.properties",
-    "frontend/android/settings.gradle",
+    "frontend/android/scripts/build-release-apk.sh",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

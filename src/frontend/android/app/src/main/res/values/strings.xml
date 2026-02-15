@@ -3,9 +3,21 @@
     <string name="app_name">Frontline Distributors</string>
     
     <!-- 
-        Configure your deployed PWA URL here.
-        Replace this with your actual deployed URL from the Internet Computer.
-        Example: https://your-canister-id.ic0.app
+        ⚠️ IMPORTANT: Configure your deployed PWA URL here before building release APK
+        
+        This URL must point to your deployed Internet Computer canister.
+        
+        Steps to get your URL:
+        1. Deploy your frontend canister: dfx deploy frontend
+        2. Get the canister URL from the deployment output
+        3. Replace the placeholder below with your actual URL
+        
+        Example formats:
+        - https://abc123-xyz.ic0.app
+        - https://abc123-xyz.icp0.io
+        - https://your-custom-domain.com (if using custom domain)
+        
+        The release build will fail if this is still set to the placeholder.
     -->
     <string name="pwa_url">https://your-canister-id.ic0.app</string>
     

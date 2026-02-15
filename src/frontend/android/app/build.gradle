@@ -11,8 +11,8 @@ android {
         applicationId "com.frontline.wrapper"
         minSdk 24
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -21,12 +21,22 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // For release builds, you should configure signing here
-            // signingConfig signingConfigs.release
+            
+            // Validate PWA URL before building release
+            applicationVariants.all { variant ->
+                variant.outputs.all { output ->
+                    output.outputFileName = "frontline-distributors-v${versionName}-${versionCode}.apk"
+                }
+            }
         }
         debug {
             minifyEnabled false
             debuggable true
+            applicationVariants.all { variant ->
+                variant.outputs.all { output ->
+                    output.outputFileName = "frontline-distributors-debug-v${versionName}.apk"
+                }
+            }
         }
     }
 
@@ -42,6 +52,13 @@ android {
     buildFeatures {
         viewBinding true
     }
+    
+    // Add lint options to catch configuration issues
+    lintOptions {
+        abortOnError true
+        checkReleaseBuilds true
+        warningsAsErrors false
+    }
 }
 
 dependencies {
@@ -50,4 +67,43 @@ dependencies {
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.webkit:webkit:1.9.0'
+}
+
+// Validation task to check PWA URL before release build
+tasks.register('validatePwaUrl') {
+    doLast {
+        def stringsFile = file('src/main/res/values/strings.xml')
+        def content = stringsFile.text
+        
+        if (content.contains('your-canister-id.ic0.app')) {
+            throw new GradleException(
+                '\n❌ RELEASE BUILD BLOCKED: PWA URL is still set to placeholder!\n' +
+                '\nPlease update the pwa_url in:\n' +
+                '  frontend/android/app/src/main/res/values/strings.xml\n' +
+                '\nReplace "https://your-canister-id.ic0.app" with your actual deployed PWA URL.\n' +
+                'Example: https://abc123-xyz.ic0.app or https://abc123-xyz.icp0.io\n'
+            )
+        }
+        
+        // Extract and validate URL format
+        def matcher = content =~ /<string name="pwa_url">(https?:\/\/[^<]+)<\/string>/
+        if (matcher.find()) {
+            def url = matcher.group(1)
+            println "✓ PWA URL configured: ${url}"
+            
+            // Basic validation
+            if (!url.startsWith('https://')) {
+                throw new GradleException("PWA URL must use HTTPS: ${url}")
+            }
+        } else {
+            throw new GradleException('Could not find pwa_url in strings.xml')
+        }
+    }
+}
+
+// Make release builds depend on validation
+tasks.whenTaskAdded { task ->
+    if (task.name == 'assembleRelease') {
+        task.dependsOn validatePwaUrl
+    }
 }
