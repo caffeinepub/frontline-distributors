@@ -1,628 +1,222 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 45,
-  "summary": "Frontline Distributors: prioritize delivering the working website/PWA experience matching the previously working Draft Version 5; deprioritize Android APK packaging/distribution. Core inventory, billing, customers, credits, reporting and offline-first sync remain in scope.",
-  "architectural_notes": [
-    "Android app in Kotlin using MVVM architecture",
-    "Firebase Firestore or Realtime Database with offline persistence enabled (offline-first sync)",
-    "Use RecyclerView for list screens (products, customers, bills, credits)",
-    "Use ViewBinding for UI wiring",
-    "Clean minimal business UI; code should be beginner-friendly with comments",
-    "Extend Product data model to include unitOfMeasure (PIECE/CASE) and piecesPerCase for conversions; ensure inventory and billing calculations consistently convert to a base unit for stock updates and reporting.",
-    "Deprioritize Android APK wrapper delivery; focus on deployed website/PWA parity with Draft Version 5."
-  ],
+  "projectStateVersion": 21,
+  "summary": "New project",
+  "architectural_notes": [],
   "known_issues": [
-    "Draft and live screens are empty/blank after deployment; likely due to wrapper APK failing to load the deployed PWA URL (e.g., https://frontline-distributors.ic0.app) or app requiring login/profile setup before rendering UI.",
-    "Regression after Draft Version 5: website/PWA behavior degraded; needs rollback or rebuild to match Draft v5 working state.",
-    "Popup/modal backgrounds are transparent; need opaque overlay/surface backgrounds so options/text remain readable.",
-    "Draft Version 16 does not open; it gets stuck on an infinite loading spinner (not a blank page), suggesting a service worker/caching or build/deployment hang.",
-    "On mobile, the three-dot (kebab) options menu on the left is still transparent; menu surface/overlay needs to be opaque so items (e.g., Balance) are readable.",
-    "Draft Version 18 hits Startup Timeout in phase 'Fetching user profile' (Authenticated: Yes, Profile fetched: No); likely service worker/cache or backend/profile-fetch issue. Temporary workaround: open with ?nosw=1 and/or use in-app 'Reset cached app'.",
-    "On mobile, the left-top hamburger (three lines) navigation menu/drawer background is not opaque; menu surface/overlay needs to be fully opaque so items (Dashboard/Products/Billing) are readable."
+    "Owner login still fails with error: \"Unauthorized: Only admins can assign user roles\" (salesman login works).",
+    "Login option is currently not functioning (login action/button not working); previously after a similar issue was cleared, Owner login still failed while Salesman login worked.",
+    "Login role selector is not selectable and login is not functioning (user reports login UI not selectable/working).",
+    "After deploying Version 36, user reports the login screen is still not accessible (login UI remains unusable/unreachable)."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-implement-a-simple-username-password-authentication-system-with-two-roles-owner-salesman-including-session-handling-and-role-based-authorization-for-backend-operations",
-      "title": "Implement a simple username/password authentication system with two roles (Owner, Salesman), including session handling and role-based authorization for backend operations.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-build-the-frontend-application-screens-and-navigation-login-dashboard-products-inventory-billing-create-bill-customers-and-credits-using-a-clean-minimal-business-ui-and-list-based-views",
-      "title": "Build the frontend application screens and navigation: Login, Dashboard, Products/Inventory, Billing (create bill), Customers, and Credits, using a clean minimal business UI and list-based views.",
+      "id": "feature-frontend-when-the-backend-returns-an-owner-login-error-the-ui-must-continue-to-display-a-clear-english-error-message-via-the-existing-toast-normalizeautherror-without-exposing-raw-reject-technical-prefixes-no-ui-flow-should-get-stuck-in-a-loading-state-due-to-owner-login-failure",
+      "title": "Frontend: When the backend returns an owner-login error, the UI must continue to display a clear English error message (via the existing toast + `normalizeAuthError`) without exposing raw reject/technical prefixes; no UI flow should get stuck in a loading state due to owner login failure.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-offline-first-behavior-on-the-frontend-allow-viewing-and-creating-updating-records-while-offline-persist-pending-changes-locally-and-synchronize-with-the-backend-when-connectivity-returns-including-a-visible-sync-status",
-      "title": "Add offline-first behavior on the frontend: allow viewing and creating/updating records while offline, persist pending changes locally, and synchronize with the backend when connectivity returns, including a visible sync status.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-apply-a-coherent-visual-theme-across-the-app-colors-typography-spacing-and-components-suitable-for-a-business-inventory-billing-tool-avoiding-a-blue-purple-dominant-palette",
-      "title": "Apply a coherent visual theme across the app (colors, typography, spacing, and components) suitable for a business inventory/billing tool, avoiding a blue/purple-dominant palette.",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-billing-screen-to-let-users-configure-gst-when-creating-a-bill-at-minimum-a-toggle-to-apply-gst-and-a-selectable-gst-rate-and-reflect-gst-in-the-totals-breakdown-and-final-total",
-      "title": "Update the Billing screen to let users configure GST when creating a bill (at minimum: a toggle to apply GST and a selectable GST rate), and reflect GST in the totals breakdown and final total.",
+      "id": "feature-fix-the-login-screen-so-the-user-can-always-a-change-select-the-login-as-role-between-owner-and-salesman-and-b-type-in-the-password-field-for-either-role-only-the-actual-login-submission-must-be-disabled-while-the-backend-actor-is-still-connecting-initializing-or-while-a-login-attempt-is-in-progress",
+      "title": "Fix the Login screen so the user can always (a) change/select the \"Login As\" role between Owner and Salesman and (b) type in the Password field for either role; only the actual login submission must be disabled while the backend actor is still connecting/initializing or while a login attempt is in progress.",
       "reqIds": [
         "REQ-8"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-the-recent-bills-list-calculation-display-on-the-billing-screen-to-use-the-stored-bill-totals-that-include-gst-when-gst-was-applied-so-the-displayed-amount-matches-what-was-charged",
-      "title": "Update the Recent Bills list calculation/display on the Billing screen to use the stored bill totals that include GST (when GST was applied) so the displayed amount matches what was charged.",
+      "id": "feature-fix-the-login-screen-regression-so-the-login-as-role-selector-owner-salesman-is-always-selectable-and-the-password-field-is-always-editable-when-the-user-is-on-the-login-form-only-the-login-button-may-be-disabled-while-the-backend-actor-is-still-connecting-initializing-or-while-a-login-attempt-is-in-progress",
+      "title": "Fix the Login screen regression so the \"Login As\" role selector (Owner/Salesman) is always selectable and the Password field is always editable when the user is on the login form; only the Login button may be disabled while the backend actor is still connecting/initializing or while a login attempt is in progress.",
       "reqIds": [
         "REQ-9"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-customer-bill-invoice-print-option-from-the-billing-screen-so-a-user-can-print-a-created-bill-using-the-browser-print-flow",
-      "title": "Add a customer bill (invoice) print option from the Billing screen so a user can print a created bill using the browser print flow.",
+      "id": "feature-ensure-the-frontend-never-gets-stuck-in-a-disabled-blocked-login-state-due-to-actor-initialization-timing-login-mutations-must-not-permanently-block-interaction-if-the-actor-is-not-ready-and-all-user-facing-errors-must-be-displayed-in-clear-english-via-the-existing-toast-normalizeautherror-flow-no-raw-reject-technical-prefixes",
+      "title": "Ensure the frontend never gets stuck in a disabled/blocked login state due to actor initialization timing: login mutations must not permanently block interaction if the actor is not ready, and all user-facing errors must be displayed in clear English via the existing toast + normalizeAuthError flow (no raw reject/technical prefixes).",
       "reqIds": [
         "REQ-10"
       ],
       "version": 1
     },
     {
-      "id": "feature-extend-the-data-model-to-support-profit-reporting-by-storing-per-product-cost-information-and-expose-it-through-existing-product-create-update-read-apis",
-      "title": "Extend the data model to support profit reporting by storing per-product cost information, and expose it through existing product create/update/read APIs.",
+      "id": "feature-fix-the-login-screen-so-the-login-action-always-works-end-to-end-when-the-user-selects-owner-or-salesman-enters-a-password-and-presses-the-login-button-or-enter-the-app-must-either-successfully-log-in-and-proceed-or-show-a-clear-english-error-toast-and-re-enable-the-login-button-no-silent-no-op-behavior",
+      "title": "Fix the Login screen so the login action always works end-to-end: when the user selects Owner or Salesman, enters a password, and presses the Login button (or Enter), the app must either successfully log in and proceed, or show a clear English error toast and re-enable the Login button (no silent no-op behavior).",
       "reqIds": [
-        "REQ-11"
+        "REQ-16"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-miscellaneous-expenses-tracking-e-g-diesel-maintenance-salary-food-including-creating-listing-and-deleting-expense-records-with-offline-first-support-consistent-with-the-existing-queue-sync-approach",
-      "title": "Implement miscellaneous expenses tracking (e.g., diesel, maintenance, salary, food) including creating, listing, and deleting expense records, with offline-first support consistent with the existing queue/sync approach.",
+      "id": "feature-add-a-clear-recovery-path-on-the-login-screen-for-cases-where-the-backend-actor-never-becomes-ready-connecting-to-server-so-users-can-restore-login-functionality-without-guessing-provide-a-visible-action-to-retry-initialization-and-a-visible-action-to-clear-caches-reset-the-app-both-actions-must-keep-all-user-facing-text-in-english",
+      "title": "Add a clear recovery path on the Login screen for cases where the backend actor never becomes ready (\"Connecting to server...\") so users can restore login functionality without guessing: provide a visible action to retry initialization and a visible action to clear caches/reset the app (both actions must keep all user-facing text in English).",
       "reqIds": [
-        "REQ-12"
+        "REQ-17"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-reporting-views-that-show-1-daily-sales-totals-2-profit-after-selling-and-3-sales-summary-computed-from-stored-bills-and-product-cost-where-available-and-recorded-expenses",
-      "title": "Add reporting views that show (1) daily sales totals, (2) profit after selling, and (3) sales summary, computed from stored bills (and product cost where available) and recorded expenses.",
-      "reqIds": [
-        "REQ-13"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-app-navigation-types-to-support-the-new-reporting-expenses-ui-without-modifying-any-immutable-frontend-paths-and-ensure-all-user-facing-text-for-the-new-features-is-in-english",
-      "title": "Update app navigation/types to support the new reporting/expenses UI without modifying any immutable frontend paths, and ensure all user-facing text for the new features is in English.",
-      "reqIds": [
-        "REQ-14"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-product-add-edit-ui-to-support-piece-case-configuration-and-stock-entry-allow-the-user-to-set-piecespercase-and-allow-stock-quantity-entry-to-be-specified-as-either-pieces-or-cases-converted-into-stored-piece-inventory",
-      "title": "Update the Product add/edit UI to support piece/case configuration and stock entry: allow the user to set `piecesPerCase`, and allow stock quantity entry to be specified as either Pieces or Cases (converted into stored piece inventory).",
-      "reqIds": [
-        "REQ-18"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-billing-screen-to-let-the-user-add-line-items-in-either-pieces-or-cases-per-selected-product-using-the-product-s-piecespercase-to-convert-to-pieces-for-stock-validation-and-bill-payload-generation-while-showing-the-selected-unit-in-the-line-ui",
-      "title": "Update the Billing screen to let the user add line items in either Pieces or Cases per selected product, using the product’s `piecesPerCase` to convert to pieces for stock validation and bill payload generation, while showing the selected unit in the line UI.",
-      "reqIds": [
-        "REQ-19"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-progressive-web-app-pwa-support-so-the-existing-react-app-can-be-installed-on-android-devices-via-add-to-home-screen-and-launches-as-a-standalone-app",
-      "title": "Implement Progressive Web App (PWA) support so the existing React app can be installed on Android devices via “Add to Home screen” and launches as a standalone app.",
-      "reqIds": [
-        "REQ-20"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-required-pwa-metadata-and-install-assets-create-and-link-a-web-app-manifest-set-theme-background-colors-consistent-with-the-current-palette-and-include-app-icons-including-a-maskable-icon-served-as-static-files",
-      "title": "Add required PWA metadata and install assets: create and link a web app manifest, set theme/background colors consistent with the current palette, and include app icons (including a maskable icon) served as static files.",
-      "reqIds": [
-        "REQ-21"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-service-worker-to-support-offline-app-shell-loading-on-android-cache-static-assets-without-breaking-the-existing-offline-queue-sync-behavior-for-data-mutations",
-      "title": "Add a service worker to support offline app-shell loading on Android (cache static assets) without breaking the existing offline queue/sync behavior for data mutations.",
+      "id": "feature-ensure-the-application-always-allows-the-user-to-reach-and-use-the-login-screen-even-if-a-previous-session-left-isauthenticated-true-in-localstorage-and-the-backend-actor-user-profile-cannot-be-fetched-e-g-actor-initialization-stalls-or-fails-the-app-must-not-remain-indefinitely-on-the-full-screen-loading-state-in-a-way-that-prevents-login-interaction",
+      "title": "Ensure the application always allows the user to reach and use the Login screen, even if a previous session left `isAuthenticated=true` in localStorage and the backend actor/user profile cannot be fetched (e.g., actor initialization stalls or fails). The app must not remain indefinitely on the full-screen \"Loading...\" state in a way that prevents login interaction.",
       "reqIds": [
         "REQ-22"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-an-in-app-install-prompt-entry-point-for-supported-browsers-android-chrome-so-users-can-trigger-installation-from-within-the-ui-when-the-pwa-is-installable",
-      "title": "Add an in-app install prompt entry point for supported browsers (Android Chrome) so users can trigger installation from within the UI when the PWA is installable.",
+      "id": "feature-add-a-clear-recovery-action-whenever-startup-profile-loading-fails-or-stalls-that-lets-the-user-return-to-login-by-clearing-password-auth-state-logout-clearauth-without-requiring-manual-cache-clearing-this-recovery-action-must-be-visible-on-the-relevant-error-timeout-ui-and-must-not-rely-only-on-a-full-page-reload",
+      "title": "Add a clear recovery action whenever startup/profile loading fails or stalls that lets the user return to Login by clearing password-auth state (logout/clearAuth) without requiring manual cache clearing. This recovery action must be visible on the relevant error/timeout UI and must not rely only on a full page reload.",
       "reqIds": [
         "REQ-23"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-an-android-apk-packaging-option-for-the-existing-pwa-so-the-user-can-download-and-install-the-app-on-an-android-device-wrap-the-deployed-web-app-into-an-apk-and-provide-a-release-artifact",
-      "title": "Add an Android APK packaging option for the existing PWA so the user can download and install the app on an Android device (wrap the deployed web app into an APK and provide a release artifact).",
-      "reqIds": [
-        "REQ-24"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-generate-a-fresh-android-release-apk-for-the-existing-pwa-wrapper-project-frontend-android-and-publish-it-as-a-new-downloadable-release-artifact-because-the-previous-download-link-is-unreachable",
-      "title": "Generate a fresh Android release APK for the existing PWA wrapper project (frontend/android) and publish it as a new downloadable release artifact, because the previous download link is unreachable.",
-      "reqIds": [
-        "REQ-25"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-bump-the-android-wrapper-app-version-versioncode-and-versionname-so-the-regenerated-apk-is-distinguishable-from-prior-builds",
-      "title": "Bump the Android wrapper app version (versionCode and versionName) so the regenerated APK is distinguishable from prior builds.",
-      "reqIds": [
-        "REQ-26"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-verify-the-android-wrapper-is-configured-to-load-the-deployed-pwa-url-via-the-android-string-resource-pwa-url-and-ensure-the-release-build-uses-a-valid-deployed-url-value-not-the-placeholder",
-      "title": "Verify the Android wrapper is configured to load the deployed PWA URL via the Android string resource pwa_url, and ensure the release build uses a valid, deployed URL value (not the placeholder).",
-      "reqIds": [
-        "REQ-27"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-generate-a-brand-new-android-release-apk-from-the-existing-pwa-wrapper-project-in-frontend-android-and-publish-it-as-a-new-downloadable-build-artifact-link-a-new-link-not-reusing-the-previously-unreachable-one",
-      "title": "Generate a brand-new Android **release** APK from the existing PWA wrapper project in `frontend/android` and publish it as a new downloadable build artifact/link (a new link, not reusing the previously unreachable one).",
-      "reqIds": [
-        "REQ-28"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-bump-the-android-wrapper-app-version-so-the-regenerated-apk-is-distinguishable-from-prior-builds-by-incrementing-versioncode-and-updating-versionname-in-frontend-android-app-build-gradle",
-      "title": "Bump the Android wrapper app version so the regenerated APK is distinguishable from prior builds by incrementing `versionCode` and updating `versionName` in `frontend/android/app/build.gradle`.",
-      "reqIds": [
-        "REQ-29",
-        "REQ-32"
-      ],
-      "version": 2
-    },
-    {
-      "id": "feature-ensure-the-android-release-build-uses-a-valid-deployed-pwa-url-not-the-placeholder-by-setting-pwa-url-in-frontend-android-app-src-main-res-values-strings-xml-to-the-actual-deployed-pwa-url-used-for-this-build-so-the-gradle-validatepwaurl-task-passes",
-      "title": "Ensure the Android release build uses a valid deployed PWA URL (not the placeholder) by setting `pwa_url` in `frontend/android/app/src/main/res/values/strings.xml` to the actual deployed PWA URL used for this build so the Gradle `validatePwaUrl` task passes.",
-      "reqIds": [
-        "REQ-30"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-generate-a-brand-new-android-release-apk-from-the-existing-pwa-wrapper-project-in-frontend-android-and-publish-it-as-a-new-downloadable-build-artifact-link-do-not-reuse-the-previously-unreachable-link",
-      "title": "Generate a brand-new Android **release** APK from the existing PWA wrapper project in `frontend/android`, and publish it as a **new downloadable build artifact/link** (do not reuse the previously unreachable link).",
-      "reqIds": [
-        "REQ-31"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-the-android-release-build-uses-a-valid-deployed-pwa-url-not-a-placeholder-by-verifying-pwa-url-in-frontend-android-app-src-main-res-values-strings-xml-is-set-to-the-deployed-app-url-and-that-the-gradle-validatepwaurl-task-passes-during-the-release-build",
-      "title": "Ensure the Android release build uses a valid deployed PWA URL (not a placeholder) by verifying `pwa_url` in `frontend/android/app/src/main/res/values/strings.xml` is set to the deployed app URL and that the Gradle `validatePwaUrl` task passes during the release build.",
-      "reqIds": [
-        "REQ-33"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-bump-the-android-wrapper-app-version-so-the-newly-generated-apk-is-distinguishable-from-prior-builds-by-incrementing-versioncode-and-updating-versionname-in-frontend-android-app-build-gradle",
-      "title": "Bump the Android wrapper app version so the newly generated APK is distinguishable from prior builds by incrementing `versionCode` and updating `versionName` in `frontend/android/app/build.gradle`.",
-      "reqIds": [
-        "REQ-34",
-        "REQ-38"
-      ],
-      "version": 2
-    },
-    {
-      "id": "feature-ensure-the-android-release-build-is-configured-to-load-the-deployed-pwa-url-by-verifying-frontend-android-app-src-main-res-values-strings-xml-contains-a-valid-https-pwa-url-set-to-https-frontline-distributors-ic0-app-and-not-a-placeholder-and-ensure-the-gradle-validatepwaurl-check-passes-during-the-release-build",
-      "title": "Ensure the Android release build is configured to load the deployed PWA URL by verifying `frontend/android/app/src/main/res/values/strings.xml` contains a valid HTTPS `pwa_url` set to `https://frontline-distributors.ic0.app` (and not a placeholder), and ensure the Gradle `validatePwaUrl` check passes during the release build.",
-      "reqIds": [
-        "REQ-35"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-generate-a-brand-new-signed-release-apk-from-the-existing-wrapper-project-in-frontend-android-and-publish-it-as-a-new-downloadable-build-artifact-link-do-not-reuse-any-previously-generated-unreachable-link",
-      "title": "Generate a brand-new signed release APK from the existing wrapper project in `frontend/android` and publish it as a new downloadable build artifact/link (do not reuse any previously generated/unreachable link).",
-      "reqIds": [
-        "REQ-36"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-generate-a-brand-new-signed-android-release-apk-from-the-existing-wrapper-project-in-frontend-android-and-publish-it-as-a-new-downloadable-build-artifact-link-that-is-publicly-reachable-do-not-reuse-https-api-caffeine-build-download-apk-frontline-distributors-latest",
-      "title": "Generate a brand-new signed Android **release** APK from the existing wrapper project in `frontend/android` and publish it as a **new downloadable build artifact/link** that is publicly reachable (do not reuse `https://api.caffeine.build/download/apk/frontline-distributors/latest`).",
-      "reqIds": [
-        "REQ-37"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-the-android-release-build-is-configured-to-load-the-deployed-pwa-url-by-verifying-frontend-android-app-src-main-res-values-strings-xml-contains-a-valid-https-pwa-url-set-to-https-frontline-distributors-ic0-app-and-that-the-gradle-validatepwaurl-check-passes-during-the-release-build",
-      "title": "Ensure the Android release build is configured to load the deployed PWA URL by verifying `frontend/android/app/src/main/res/values/strings.xml` contains a valid HTTPS `pwa_url` set to `https://frontline-distributors.ic0.app` and that the Gradle `validatePwaUrl` check passes during the release build.",
-      "reqIds": [
-        "REQ-39"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-fix-the-deployed-website-pwa-blank-empty-screen-regression-so-that-the-app-always-renders-a-visible-screen-loading-sign-in-profile-setup-or-the-main-app-instead-of-returning-a-blank-page-matching-the-previously-working-draft-version-5-behavior",
-      "title": "Fix the deployed website/PWA blank/empty-screen regression so that the app always renders a visible screen (Loading, Sign In, Profile Setup, or the main app) instead of returning a blank page, matching the previously working Draft Version 5 behavior.",
-      "reqIds": [
-        "REQ-40"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-adjust-the-pwa-service-worker-app-shell-caching-strategy-so-it-does-not-cache-source-module-paths-e-g-src-main-tsx-in-a-way-that-can-break-production-deployments-and-ensure-the-website-loads-reliably-online-and-offline-app-shell-without-causing-blank-screens-after-updates",
-      "title": "Adjust the PWA service worker app-shell caching strategy so it does not cache source-module paths (e.g., /src/main.tsx) in a way that can break production deployments, and ensure the website loads reliably online and offline (app shell) without causing blank screens after updates.",
-      "reqIds": [
-        "REQ-41"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-remove-deprioritize-apk-generation-and-android-wrapper-distribution-from-the-deliverable-so-the-build-output-and-workflow-focus-on-the-website-pwa-experience-only",
-      "title": "Remove/deprioritize APK generation and Android-wrapper distribution from the deliverable so the build output and workflow focus on the website/PWA experience only.",
-      "reqIds": [
-        "REQ-42"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-verify-core-website-screens-work-end-to-end-dashboard-products-billing-customers-credits-reports-and-that-navigation-renders-correctly-after-login-profile-setup-consistent-with-the-working-draft-version-5-website-behavior",
-      "title": "Verify core website screens work end-to-end (Dashboard, Products, Billing, Customers, Credits, Reports) and that navigation renders correctly after login/profile setup, consistent with the working Draft Version 5 website behavior.",
-      "reqIds": [
-        "REQ-43"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-fix-the-popup-modal-transparency-issue-by-ensuring-all-radix-shadcn-overlay-and-popup-surfaces-render-with-an-opaque-background-and-sufficient-contrast-so-options-are-readable-when-any-popup-opens-e-g-dialog-modals-and-select-dropdowns-used-across-billing-products-and-customers",
-      "title": "Fix the popup/modal transparency issue by ensuring all Radix/shadcn overlay and popup surfaces render with an opaque background and sufficient contrast, so options are readable when any popup opens (e.g., Dialog modals and Select dropdowns used across Billing, Products, and Customers).",
-      "reqIds": [
-        "REQ-44"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-main-app-layout-to-be-responsive-on-mobile-screens-replace-the-always-visible-left-sidenav-with-a-mobile-navigation-pattern-e-g-a-hamburger-triggered-sheet-drawer-or-a-bottom-navigation-and-ensure-the-content-area-uses-mobile-appropriate-spacing-without-horizontal-overflow",
-      "title": "Update the main app layout to be responsive on mobile screens: replace the always-visible left SideNav with a mobile navigation pattern (e.g., a hamburger-triggered sheet/drawer or a bottom navigation) and ensure the content area uses mobile-appropriate spacing without horizontal overflow.",
-      "reqIds": [
-        "REQ-45"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-make-topbar-responsive-for-mobile-ensure-the-header-content-title-sync-indicator-install-button-user-info-logout-wraps-or-collapses-gracefully-so-it-does-not-overflow-and-remains-usable-on-small-screens",
-      "title": "Make TopBar responsive for mobile: ensure the header content (title, sync indicator, install button, user info, logout) wraps or collapses gracefully so it does not overflow and remains usable on small screens.",
-      "reqIds": [
-        "REQ-46"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-list-table-based-screens-to-be-mobile-friendly-by-providing-a-responsive-alternative-to-wide-tables-e-g-stacked-card-rows-on-small-screens-and-or-horizontal-scroll-with-clear-affordance-for-products-customers-credits-reports-and-any-other-table-based-views",
-      "title": "Update list/table-based screens to be mobile-friendly by providing a responsive alternative to wide tables (e.g., stacked card rows on small screens and/or horizontal scroll with clear affordance) for Products, Customers, Credits, Reports, and any other table-based views.",
-      "reqIds": [
-        "REQ-47"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-make-the-billing-screen-responsive-ensure-the-two-column-layout-becomes-a-single-column-flow-on-small-screens-form-controls-are-usable-on-touch-devices-and-bill-line-items-recent-bills-render-without-overflow",
-      "title": "Make the Billing screen responsive: ensure the two-column layout becomes a single-column flow on small screens, form controls are usable on touch devices, and bill line items/recent bills render without overflow.",
-      "reqIds": [
-        "REQ-48"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-dialogs-used-across-the-app-e-g-productdialog-customerdialog-add-expense-dialog-are-mobile-friendly-content-fits-within-the-viewport-forms-are-scrollable-when-needed-and-action-buttons-remain-reachable-without-being-cut-off",
-      "title": "Ensure dialogs used across the app (e.g., ProductDialog, CustomerDialog, Add Expense dialog) are mobile-friendly: content fits within the viewport, forms are scrollable when needed, and action buttons remain reachable without being cut off.",
-      "reqIds": [
-        "REQ-49"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-fix-ui-transparency-by-ensuring-all-overlay-and-popup-surfaces-render-with-fully-opaque-backgrounds-no-translucency-and-readable-contrast-across-the-app-in-both-light-and-dark-themes-this-must-cover-radix-shadcn-primitives-used-in-the-app-at-minimum-dialog-alertdialog-sheet-select-dropdownmenu-and-any-other-radix-popover-style-surfaces-present-such-as-popover-contextmenu-menubar-tooltip-hovercard-command-so-that-when-any-popup-opens-the-surface-and-its-options-text-are-clearly-readable",
-      "title": "Fix UI transparency by ensuring all overlay and popup surfaces render with fully opaque backgrounds (no translucency) and readable contrast across the app, in both light and dark themes. This must cover Radix/shadcn primitives used in the app (at minimum: Dialog/AlertDialog, Sheet, Select, DropdownMenu; and any other Radix popover-style surfaces present such as Popover, ContextMenu, Menubar, Tooltip, HoverCard, Command) so that when any popup opens, the surface and its options/text are clearly readable.",
-      "reqIds": [
-        "REQ-50"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-startup-watchdog-so-the-app-never-stays-on-the-initial-loading-spinner-indefinitely-if-initialization-or-authenticated-profile-loading-exceeds-a-reasonable-timeout-automatically-show-a-clear-error-recovery-screen-instead-of-continuing-to-spin",
-      "title": "Add a startup watchdog so the app never stays on the initial loading spinner indefinitely; if initialization or authenticated profile-loading exceeds a reasonable timeout, automatically show a clear error/recovery screen instead of continuing to spin.",
-      "reqIds": [
-        "REQ-51"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-provide-an-in-app-user-triggered-reset-cached-app-recovery-that-also-clears-pwa-service-worker-caches-to-resolve-stuck-load-cases-caused-by-cached-assets-without-requiring-users-to-manually-open-browser-settings",
-      "title": "Provide an in-app, user-triggered “reset cached app” recovery that also clears PWA/service-worker caches to resolve stuck-load cases caused by cached assets, without requiring users to manually open browser settings.",
-      "reqIds": [
-        "REQ-52"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-service-worker-safe-mode-toggle-via-url-parameter-so-draft-builds-can-be-opened-without-service-worker-interference-e-g-nosw-1-and-ensure-the-ui-instructs-users-how-to-use-it-when-stuck-loading",
-      "title": "Add a service-worker safe mode toggle via URL parameter so Draft builds can be opened without service worker interference (e.g., `?nosw=1`), and ensure the UI instructs users how to use it when stuck loading.",
-      "reqIds": [
-        "REQ-53"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-improve-diagnostics-for-the-stuck-spinner-case-by-capturing-and-displaying-in-the-recovery-error-view-the-current-startup-phase-e-g-initializing-identity-vs-fetching-profile-so-the-failure-mode-is-actionable",
-      "title": "Improve diagnostics for the stuck spinner case by capturing and displaying (in the recovery/error view) the current startup phase (e.g., initializing identity vs. fetching profile) so the failure mode is actionable.",
-      "reqIds": [
-        "REQ-54"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-fix-the-remaining-mobile-transparency-issue-where-the-left-side-three-dot-kebab-options-menu-is-still-transparent-ensure-the-menu-surface-and-any-overlay-backdrop-are-fully-opaque-with-readable-contrast-in-both-light-and-dark-themes-matching-the-rest-of-the-app-s-popup-menu-styling",
-      "title": "Fix the remaining mobile transparency issue where the left-side three-dot (kebab) options menu is still transparent. Ensure the menu surface and any overlay/backdrop are fully opaque with readable contrast in both light and dark themes, matching the rest of the app’s popup/menu styling.",
-      "reqIds": [
-        "REQ-55"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-trigger-a-fresh-rebuild-and-redeploy-of-the-current-draft-and-provide-a-new-shareable-draft-url-link-do-not-reuse-the-previous-draft-link-so-users-can-open-the-app-without-stale-deployment-artifacts",
-      "title": "Trigger a fresh rebuild and redeploy of the current Draft, and provide a new shareable Draft URL/link (do not reuse the previous draft link) so users can open the app without stale deployment artifacts.",
-      "reqIds": [
-        "REQ-56"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-bump-the-pwa-service-worker-cache-version-to-force-clients-to-fetch-fresh-assets-after-the-rebuild-reducing-the-chance-of-getting-stuck-on-the-startup-timeout-screen-due-to-stale-cached-bundles",
-      "title": "Bump the PWA service worker cache version to force clients to fetch fresh assets after the rebuild, reducing the chance of getting stuck on the Startup Timeout screen due to stale cached bundles.",
-      "reqIds": [
-        "REQ-57"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-make-the-mobile-hamburger-top-left-three-lines-navigation-drawer-menu-fully-opaque-on-mobile-so-that-the-drawer-surface-and-its-overlay-backdrop-are-readable-e-g-dashboard-products-billing-list-in-both-light-and-dark-themes",
-      "title": "Make the mobile hamburger (top-left three lines) navigation drawer/menu fully opaque on mobile so that the drawer surface and its overlay backdrop are readable (e.g., Dashboard/Products/Billing list) in both light and dark themes.",
-      "reqIds": [
-        "REQ-58"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-make-the-mobile-hamburger-navigation-drawer-radix-sheet-used-by-frontend-src-components-mobilenavdrawer-tsx-and-its-overlay-backdrop-fully-opaque-on-mobile-in-both-light-and-dark-themes-so-the-navigation-items-are-always-readable-with-no-translucency",
-      "title": "Make the mobile hamburger navigation drawer (Radix Sheet used by `frontend/src/components/MobileNavDrawer.tsx`) and its overlay/backdrop fully opaque on mobile, in both light and dark themes, so the navigation items are always readable with no translucency.",
-      "reqIds": [
-        "REQ-59"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-fix-the-mobile-hamburger-navigation-drawer-so-that-both-the-drawer-surface-and-its-overlay-backdrop-are-fully-opaque-no-translucency-and-the-navigation-items-are-always-readable-on-mobile-in-both-light-and-dark-themes",
-      "title": "Fix the mobile hamburger navigation drawer so that both the drawer surface and its overlay/backdrop are fully opaque (no translucency) and the navigation items are always readable on mobile, in both light and dark themes.",
-      "reqIds": [
-        "REQ-60"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-force-clients-to-pick-up-the-fresh-build-assets-after-redeploy-by-bumping-the-app-build-identifier-and-the-pwa-service-worker-cache-version",
-      "title": "Force clients to pick up the fresh build assets after redeploy by bumping the app build identifier and the PWA service worker cache version.",
-      "reqIds": [
-        "REQ-61"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [
     {
-      "id": "AR-1",
-      "summary": "Implement simple username/password login (no OTP/email) with roles Owner and Salesman; store users in Firebase or local DB",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Create Dashboard screen for the app",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
       "id": "AR-3",
-      "summary": "Inventory module: add/edit/delete products with fields (name, price, stock quantity) and Firebase sync with offline support",
+      "summary": "Fix owner login flow so it does not fail with \"Owner status not found for principal\" after logging in as owner; ensure the owner principal has the required OwnerStatus record/initialization during auth bootstrap.",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-4",
-      "summary": "Billing module: create bills by selecting products and quantities, auto-calculate total, reduce stock, save and sync (offline-first)",
-      "reqIds": [],
+      "summary": "Update the backend owner authentication bootstrap so that `loginAsOwner` and `changeOwnerPassword` never fail with the error text \"Owner status not found for principal\" for a non-anonymous caller. If the caller has no `OwnerStatus` record yet, the backend must create/initialize one automatically (using the existing default owner password) before validating the password attempt.",
+      "reqIds": [
+        "REQ-1"
+      ],
       "status": "pending"
     },
     {
       "id": "AR-5",
-      "summary": "Customers module: store customer details and manage customer list",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Credits module: track customer credit balances (pending/paid) and sync with offline support",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-7",
-      "summary": "Set up Android project architecture and UI foundations: MVVM, RecyclerView lists, ViewBinding, clean minimal business UI, beginner-friendly commented code",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-9",
-      "summary": "Create backend data models and APIs for Products/Inventory, Customers, Bills, and Credits, supporting create/read/update/delete workflows and consistent IDs/timestamps needed for sync.",
+      "summary": "Ensure that after a successful `loginAsOwner` (and after a successful `changeOwnerPassword`), the caller is immediately authorized for endpoints guarded by both `requireUser` and `requireAdmin` (i.e., the owner principal receives the necessary authorization/roles in `accessControlState` during the same login flow).",
       "reqIds": [
         "REQ-2"
       ],
       "status": "pending"
     },
     {
-      "id": "AR-10",
-      "summary": "Add GST options in Billing module (configure/apply GST to bills and reflect in totals)",
+      "id": "AR-6",
+      "summary": "Fix owner login flow error \"Unauthorized: Only admins can assign user roles\" by adjusting backend role/authorization bootstrap so the owner principal can be granted required roles/permissions during login without failing authorization checks (salesman login unaffected).",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-11",
-      "summary": "Extend the Bill data model in the backend to support GST options on bills, and persist those GST settings/amounts as part of each Bill record.",
+      "id": "AR-7",
+      "summary": "Fix the backend owner-login and owner-password-change flows so that a successful owner authentication can bootstrap the caller into the required AccessControl roles without failing with the error text \"Unauthorized: Only admins can assign user roles\".",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Ensure the backend does not rely on the caller already being an admin in order to assign the initial owner roles during owner authentication bootstrap; the role/permission assignment must be performed in a way that is allowed during the owner bootstrap path.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Fix backend owner authentication bootstrap so that logging in as owner does not fail with the error text \"Unauthorized: Only admins can assign user roles\" and the owner principal is granted the necessary roles/permissions during the same `loginAsOwner` / `changeOwnerPassword` flow without requiring the caller to already be an admin.",
       "reqIds": [
         "REQ-6"
       ],
       "status": "pending"
     },
     {
-      "id": "AR-12",
-      "summary": "Add a conditional canister state migration to ensure existing persisted Bill records are upgraded to the new Bill schema with sensible default GST values (e.g., GST not applied, GST rate 0).",
+      "id": "AR-10",
+      "summary": "Ensure the salesman login flow remains unchanged and continues to enforce its current authorization behavior; the fix for owner bootstrap must not allow non-admin salesmen to self-assign roles or bypass the \"Only admins can assign user roles\" restriction.",
       "reqIds": [
         "REQ-7"
       ],
       "status": "pending"
     },
     {
-      "id": "AR-13",
-      "summary": "Add option to print/share/export a customer bill (invoice) from Billing module",
+      "id": "AR-11",
+      "summary": "Fix login UI so users can change/select the \"Login as\" role (Owner/Salesman) and can type a password in both modes; ensure inputs are enabled and not blocked by loading/disabled state.",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-14",
-      "summary": "Add daily sales tracking/report (view sales totals per day)",
-      "reqIds": [],
+      "summary": "Fix backend owner authentication bootstrap so that after a successful loginAsOwner and after a successful changeOwnerPassword, the caller is immediately authorized for endpoints guarded by requireUser and requireAdmin in the same session (no follow-up calls or manual admin setup required).",
+      "reqIds": [
+        "REQ-11"
+      ],
       "status": "pending"
     },
     {
       "id": "AR-15",
-      "summary": "Add profit reporting (profit after selling) based on sales and cost data",
-      "reqIds": [],
+      "summary": "Eliminate owner-login bootstrap failures related to role assignment so owner login never fails with \"Unauthorized: Only admins can assign user roles\" and never fails with \"Owner status not found for principal\" for any non-anonymous caller; salesman login behavior must remain unchanged and must not allow non-admin salesmen to self-assign roles.",
+      "reqIds": [
+        "REQ-12"
+      ],
       "status": "pending"
     },
     {
       "id": "AR-16",
-      "summary": "Add miscellaneous expenses tracking (diesel, maintenance, salary, food, etc.) and include in summaries",
-      "reqIds": [],
+      "summary": "Fix the backend owner authentication bootstrap so that logging in as Owner never fails with the error message \"Unauthorized: Only admins can assign user roles\".",
+      "reqIds": [
+        "REQ-13"
+      ],
       "status": "pending"
     },
     {
       "id": "AR-17",
-      "summary": "Add sales summary report screen (overall summary of sales, optionally including profit and expenses)",
-      "reqIds": [],
+      "summary": "Ensure that after a successful Owner login (and after a successful Owner password change), the caller is immediately authorized for endpoints guarded by both user and admin authorization checks in the same session.",
+      "reqIds": [
+        "REQ-14"
+      ],
       "status": "pending"
     },
     {
       "id": "AR-18",
-      "summary": "Support products sold/stocked in Pieces or Cases: add per-product unit type and pieces-per-case; allow stock entry and billing in piece/case with correct conversion and totals/stock updates (offline-first)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-19",
-      "summary": "Extend the Product data model to store packaging information required for piece/case conversion by adding a new field `piecesPerCase` (Nat) and treat `availableInventory` as the number of pieces available.",
+      "summary": "Keep the Salesman login flow behavior unchanged and do not allow non-admin Salesman users to self-assign roles or bypass the existing restriction that only admins can assign user roles.",
       "reqIds": [
         "REQ-15"
       ],
       "status": "pending"
     },
     {
-      "id": "AR-20",
-      "summary": "Add a conditional canister state migration to backfill `piecesPerCase` for existing persisted products (default to 1) so upgrades do not trap when decoding older Product records.",
+      "id": "AR-21",
+      "summary": "Fix backend Owner authentication bootstrap so Owner login does not fail and the Owner principal is fully authorized in the same session: after a successful loginAsOwner or changeOwnerPassword, the caller must immediately pass both requireUser and requireAdmin guards, without throwing authorization errors during bootstrap.",
       "reqIds": [
-        "REQ-16"
+        "REQ-18"
       ],
       "status": "pending"
     },
     {
-      "id": "AR-21",
-      "summary": "Update bill creation to reduce product inventory in pieces when a bill is created by subtracting the total number of sold pieces per product from `availableInventory`, and reject bill creation when any product would go negative.",
+      "id": "AR-22",
+      "summary": "Ensure the Salesman login behavior remains unchanged and does not gain any ability to self-assign admin/user roles beyond current rules while fixing Owner bootstrap.",
       "reqIds": [
-        "REQ-17"
+        "REQ-19"
       ],
       "status": "pending"
     },
     {
       "id": "AR-23",
-      "summary": "Restore/rebuild the deployed website/PWA to match the behavior and UI of the previously working Draft Version 5 (fix regressions introduced after Draft v5).",
-      "reqIds": [],
+      "summary": "Fix the Login screen so the user can always interact with the \"Login As\" role selector (Owner/Salesman) and the Password input while on the login form; only the Login button submission must be disabled during backend actor initialization/connection and during an active login attempt. Ensure there is no UI overlay/state that blocks selecting the role or typing the password.",
+      "reqIds": [
+        "REQ-20"
+      ],
       "status": "pending"
     },
     {
       "id": "AR-24",
-      "summary": "Update the website/PWA UI to be mobile-friendly/responsive (suitable mobile layout while keeping the same overall design)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-25",
-      "summary": "Change popup/modal backgrounds/overlays to be opaque (fix transparency so content is readable) across the website/PWA UI",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-26",
-      "summary": "Rebuild/redeploy the current draft and provide a new shareable draft link to bypass possible cached/stale deployment artifacts.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-27",
-      "summary": "Fix mobile hamburger navigation drawer transparency: make the drawer background and its overlay/backdrop fully opaque so menu items are always readable; then deploy a fresh version and provide a new preview link.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-30",
-      "summary": "Deploy a fresh Draft build of the app and provide a new shareable preview link (do not reuse the previous draft link).",
+      "summary": "Fix the login action so it always performs a single, reliable end-to-end attempt: when the user presses the Login button (or presses Enter in the password field), the app must either successfully log in and proceed, or display a clear English error toast and fully re-enable login interaction (no silent no-op and no permanently stuck disabled state).",
       "reqIds": [
-        "REQ-62"
+        "REQ-21"
       ],
       "status": "pending"
     }
   ],
-  "gameProjectType": "none",
-  "projectName": "Frontline Distributors",
+  "projectName": "Fix owner login authorization error during role bootstrap",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

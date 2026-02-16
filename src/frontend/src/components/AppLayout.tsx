@@ -36,7 +36,7 @@ export default function AppLayout({ children, currentScreen, onNavigate }: AppLa
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         {/* Top Bar */}
-        <TopBar onMobileMenuClick={() => setMobileNavOpen(true)} />
+        <TopBar onMenuClick={() => setMobileNavOpen(true)} />
         
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6">

@@ -1,68 +1,53 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Opaque mobile nav drawer/overlay and cache-busting build bump",
+  "title": "Unblock Login during stalled startup/profile gating and add recovery actions",
   "requirements": [
     {
-      "id": "REQ-60",
-      "summary": "Make the mobile hamburger Sheet drawer surface and overlay fully opaque and ensure nav labels remain readable in light/dark themes without touching immutable shadcn UI files.",
+      "id": "REQ-22",
+      "summary": "Prevent global startup loading/profile gating from blocking access to an interactive Login screen when actor/profile cannot be fetched.",
       "acceptanceCriteria": [
-        "On a small/mobile viewport, opening the hamburger menu shows a fully opaque drawer surface (no transparency) in both light and dark themes.",
-        "The overlay/backdrop behind the drawer is fully opaque (no transparency) and does not use blur/backdrop-filter effects that reduce readability.",
-        "All navigation labels (Dashboard, Products, Billing, Customers, Credits, Reports) remain clearly readable against the drawer background.",
-        "Change is implemented without modifying any files under frontend/src/components/ui (immutable shadcn path constraint)."
+        "If the backend actor is unavailable (null) or still initializing, the user can still see a usable Login screen UI (role selector and password input remain interactive; only the Login button may be disabled when appropriate).",
+        "If a stored password-auth session causes the app to attempt profile fetch but the profile query cannot run because the actor is not ready, the app must not lock the user into the global loading screen; it must offer a clear path back to login.",
+        "All user-facing messages involved in this flow are in English."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/MobileNavDrawer.tsx",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Adjust the mobile drawer (SheetContent) and its navigation item styling to enforce fully opaque surfaces and high-contrast text/icons for both light and dark themes (e.g., ensure drawer uses an opaque theme surface and nav items explicitly use readable foreground colors). Verify the component's usage instructions before implementing."
+          "description": "Adjust startup gating so the app does not enter an indefinite full-screen \"Loading...\" state when password-auth is restored but the actor is unavailable/initializing (i.e., profile fetching is not yet possible). Ensure the LoginScreen can render in that scenario, with login inputs remaining usable and only the Login button disabled when the actor is not ready."
         },
         {
-          "path": "frontend/src/index.css",
+          "path": "frontend/src/screens/LoginScreen.tsx",
           "operation": "modify",
-          "description": "Harden global Radix Sheet overlay/content rules to guarantee the mobile navigation overlay/backdrop and drawer content are fully opaque and have no blur/backdrop-filter in both themes; ensure these overrides do not require modifying frontend/src/components/ui."
+          "description": "Ensure the Login screen remains fully interactive during actor initialization failures/stalls (keep role selector + password input enabled) and show clear English connection status messaging while keeping only the Login button disabled when the actor is not ready."
         }
       ]
     },
     {
-      "id": "REQ-61",
-      "summary": "Bump the app build identifier and the service worker cache version so clients pick up fresh assets after redeploy.",
+      "id": "REQ-23",
+      "summary": "Add visible recovery actions on startup timeout and profile-fetch error screens to clear password-auth state and return to Login without requiring a full reload.",
       "acceptanceCriteria": [
-        "Increment the build identifier in frontend/src/utils/buildInfo.ts so the app detects a new deployment.",
-        "Increment the service worker cache version constant in frontend/public/sw.js (e.g., v3 -> v4) so previously cached assets are not reused.",
-        "After deployment, a hard refresh is not required for most clients to see the updated drawer/overlay styling."
+        "When the startup watchdog timeout screen is shown, there is a visible action (button) that clears the password-auth session and returns the UI to the Login screen.",
+        "When the app shows a profile fetch error state (the existing AppStartupError path), the user can choose an option that clears the password-auth session and returns to the Login screen.",
+        "Using the recovery action does not leave the app stuck in a loading/disabled state; login inputs remain usable immediately after returning to the Login screen.",
+        "All user-facing button labels and help text added/changed are in English."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/buildInfo.ts",
+          "path": "frontend/src/components/AppStartupError.tsx",
           "operation": "modify",
-          "description": "Increment BUILD_ID to a new value so the app detects a new deployment and triggers its cache-reset behavior."
+          "description": "Add an explicit recovery control (button) for non-auth startup failures and watchdog timeouts that can clear password-auth state and route the user back to Login (without relying only on a full page reload). Update error text rendering to use the existing auth error normalization approach (normalizeAuthError) to avoid exposing raw technical reject prefixes."
         },
         {
-          "path": "frontend/public/sw.js",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Increment CACHE_VERSION (e.g., v3 → v4) so the service worker uses a new cache namespace and cleans up old cached assets on activation."
+          "description": "Wire AppStartupError recovery actions for both watchdog timeout and profile-fetch error paths by providing a clearAuth/return-to-login handler (clearing password-auth state and any cached client state as appropriate) and ensuring the post-recovery UI shows an immediately usable Login screen."
         },
         {
-          "path": "frontend/index.html",
+          "path": "frontend/src/screens/LoginScreen.tsx",
           "operation": "modify",
-          "description": "Update the service worker registration query parameter buildId to match the new BUILD_ID so the browser fetches a fresh service worker script URL on the new deployment."
-        }
-      ]
-    },
-    {
-      "id": "REQ-62",
-      "summary": "Prepare for a fresh Draft deployment and capture the steps needed to produce and share a new preview link.",
-      "acceptanceCriteria": [
-        "A new Draft deployment is created successfully.",
-        "A new preview URL is generated and shared that is different from the previous draft URL."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/DEPLOY_DRAFT_PREVIEW.md",
-          "operation": "create",
-          "description": "Add a short deployment checklist documenting how to create a fresh Draft deployment and where to retrieve the newly generated preview URL (ensuring it is not reusing the prior draft link)."
+          "description": "Add a visible recovery action on the Login screen for stalled startup situations (e.g., a \"Clear Saved Session\" / \"Log out\" control) that clears password-auth state and immediately re-enables login inputs, without requiring manual cache clearing."
         }
       ]
     }

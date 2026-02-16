@@ -1,13 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Make the mobile navigation drawer and its backdrop fully opaque for readability in light/dark themes, then redeploy with a fresh build so clients receive updated assets and a new preview link.
+**Goal:** Ensure the Login screen is always reachable and usable during app startup, even when a previous password-auth session exists but actor/profile initialization stalls or fails.
 
 **Planned changes:**
-- Update the mobile hamburger drawer styling so the drawer surface is fully opaque (no translucency) in both light and dark themes, without changing any files under `frontend/src/components/ui`.
-- Update the drawer overlay/backdrop styling to be fully opaque and remove any blur/backdrop-filter effects that reduce readability.
-- Ensure all mobile drawer navigation labels (Dashboard, Products, Billing, Customers, Credits, Reports) remain clearly readable against the updated drawer background.
-- Bump the build identifier in `frontend/src/utils/buildInfo.ts` and increment the service worker cache version in `frontend/public/sw.js` to force clients to pick up fresh assets after redeploy.
-- Create a fresh Draft deployment and provide a new, distinct shareable preview URL.
+- Adjust startup gating so the app does not remain indefinitely on the full-screen “Loading...” state when the backend actor is unavailable or still initializing; keep the Login UI reachable and interactive.
+- Add clear recovery actions on startup timeout and profile-fetch error states to clear password-auth state (logout/clearAuth) and return to the Login screen without requiring manual cache clearing or relying only on a full page reload.
+- Ensure any added/updated user-facing labels and help text in these flows are in English, and keep error/toast normalization consistent with existing patterns.
 
-**User-visible outcome:** On mobile, opening the hamburger menu shows an opaque, readable navigation drawer and opaque backdrop in both themes, and users receive the update via a new deployment/preview link without typically needing a hard refresh.
+**User-visible outcome:** Users can always access and use the Login screen; if startup/profile loading stalls or fails, they can tap a visible recovery option to clear the stored session and immediately return to a usable Login screen.

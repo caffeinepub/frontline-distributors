@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGetAllCustomers, useDeleteCustomer } from '../hooks/useQueries';
+import { useGetAllCustomers, useDeleteCustomer, useGetCallerRole } from '../hooks/useQueries';
 import { useOfflineQueue } from '../offline/useOfflineQueue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 
 export default function CustomersScreen() {
   const { data: customers = [], isLoading } = useGetAllCustomers();
+  const { data: isAdmin = false } = useGetCallerRole();
   const deleteCustomer = useDeleteCustomer();
   const { queueAction } = useOfflineQueue();
   
@@ -19,16 +20,29 @@ export default function CustomersScreen() {
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
 
   const handleAdd = () => {
+    if (!isAdmin) {
+      toast.error('Only admins can add customers');
+      return;
+    }
     setEditingCustomer(null);
     setDialogOpen(true);
   };
 
   const handleEdit = (customer: Customer) => {
+    if (!isAdmin) {
+      toast.error('Only admins can edit customers');
+      return;
+    }
     setEditingCustomer(customer);
     setDialogOpen(true);
   };
 
   const handleDelete = async (customer: Customer) => {
+    if (!isAdmin) {
+      toast.error('Only admins can delete customers');
+      return;
+    }
+
     if (!confirm(`Delete customer "${customer.name}"?`)) return;
 
     try {
@@ -52,26 +66,28 @@ export default function CustomersScreen() {
           <CardRow label="Phone" value={customer.phoneNumber} />
           <CardRow label="Address" value={customer.address || 'N/A'} />
         </div>
-        <div className="flex gap-2 pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleEdit(customer)}
-            className="flex-1 gap-2"
-          >
-            <Pencil className="h-4 w-4" />
-            Edit
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleDelete(customer)}
-            className="flex-1 gap-2"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete
-          </Button>
-        </div>
+        {isAdmin && (
+          <div className="flex gap-2 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleEdit(customer)}
+              className="flex-1 gap-2"
+            >
+              <Pencil className="h-4 w-4" />
+              Edit
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleDelete(customer)}
+              className="flex-1 gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -85,10 +101,12 @@ export default function CustomersScreen() {
             Manage your customer database
           </p>
         </div>
-        <Button onClick={handleAdd} className="gap-2 w-full sm:w-auto">
-          <Plus className="h-4 w-4" />
-          Add Customer
-        </Button>
+        {isAdmin && (
+          <Button onClick={handleAdd} className="gap-2 w-full sm:w-auto">
+            <Plus className="h-4 w-4" />
+            Add Customer
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -102,7 +120,7 @@ export default function CustomersScreen() {
             </div>
           ) : customers.length === 0 ? (
             <div className="py-8 text-center text-muted-foreground">
-              No customers found. Add your first customer to get started.
+              No customers found. {isAdmin ? 'Add your first customer to get started.' : ''}
             </div>
           ) : (
             <>
@@ -114,7 +132,7 @@ export default function CustomersScreen() {
                       <TableHead>Name</TableHead>
                       <TableHead>Phone Number</TableHead>
                       <TableHead>Address</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      {isAdmin && <TableHead className="text-right">Actions</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -123,24 +141,26 @@ export default function CustomersScreen() {
                         <TableCell className="font-medium">{customer.name}</TableCell>
                         <TableCell>{customer.phoneNumber}</TableCell>
                         <TableCell>{customer.address}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEdit(customer)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(customer)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                        {isAdmin && (
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(customer)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(customer)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                   </TableBody>
@@ -152,7 +172,7 @@ export default function CustomersScreen() {
                 <ResponsiveTableCards
                   data={customers}
                   renderCard={renderCustomerCard}
-                  emptyMessage="No customers found. Add your first customer to get started."
+                  emptyMessage={`No customers found. ${isAdmin ? 'Add your first customer to get started.' : ''}`}
                 />
               </div>
             </>
@@ -160,11 +180,13 @@ export default function CustomersScreen() {
         </CardContent>
       </Card>
 
-      <CustomerDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        customer={editingCustomer}
-      />
+      {isAdmin && (
+        <CustomerDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          customer={editingCustomer}
+        />
+      )}
     </div>
   );
 }

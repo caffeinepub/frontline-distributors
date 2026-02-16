@@ -1,50 +1,45 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T23:49:03.549Z",
-  "summary": "REQ-60 and REQ-61 appear implemented via MobileNavDrawer opacity/background tweaks, global CSS overrides for Radix Sheet overlay/content (including disabling backdrop-filter), and cache-busting updates (BUILD_ID and SW cache version). REQ-62 (fresh Draft deploy + new preview link) is not evidenced in the diff. Several additional/unrequested changes were made (global dialog overlay styling, service worker registration logic in index.html, and updates to project metadata files).",
-  "missing_requirements": [
-    {
-      "id": "REQ-62",
-      "requirement": "Deploy a fresh Draft build of the app and provide a new shareable preview link (do not reuse the previous draft link).",
-      "reason": "No deployment artifacts, CI/CD changes, or preview URL/link are shown in the provided diff summary; code changes alone do not evidence a new Draft deployment or a new preview link.",
-      "evidence": [
-        "<file-diff>: no deployment/preview-link related files or outputs shown"
-      ]
-    }
-  ],
+  "generatedAt": "2026-02-16T12:57:26.512Z",
+  "summary": "Diff adds startup recovery hooks and adjusts login behavior so the role selector/password remain interactive while the backend actor initializes, and introduces explicit clear-auth callbacks in the startup error UI. It also adds unrelated deployment/build cache-reset logic and other recovery utilities (cache reset, reload) that were not requested.",
+  "missing_requirements": [],
   "hallucinated_features": [
     {
-      "description": "Made Dialog and AlertDialog overlays/content fully opaque globally (not limited to the mobile navigation Sheet/drawer).",
-      "reason": "REQ-60 targets the mobile hamburger navigation drawer (Sheet) surface and its overlay/backdrop; the diff adds global styles for dialog/alert-dialog overlays and contents as well.",
+      "description": "Build/deployment version check with automatic cache reset/reload behavior (BUILD_ID tracking, reset-in-progress flag) added to startup.",
+      "reason": "BuildRequest focuses on ensuring Login is reachable and adding a clear-auth recovery action; it does not request build-version detection or automatic cache resets on new deployments.",
       "evidence": [
-        "frontend/src/index.css"
+        "frontend/src/App.tsx (BUILD_ID_KEY/BUILD_RESET_FLAG logic, resetCachedApp usage)"
       ]
     },
     {
-      "description": "Added/changed service worker registration behavior to include a buildId query parameter and a ?nosw=1 disable switch, plus console logging in index.html.",
-      "reason": "REQ-61 only asks to bump BUILD_ID in buildInfo.ts and bump the SW cache version constant in sw.js; modifying SW registration logic and adding a disable parameter is additional behavior not requested.",
+      "description": "Cache-reset recovery path added to startup error UI.",
+      "reason": "REQ-23 asks for a recovery action that clears password-auth state and returns to Login without relying only on reload; it does not request clearing caches/resetting the app cache as part of the recovery UI.",
       "evidence": [
-        "frontend/index.html"
+        "frontend/src/components/AppStartupError.tsx (imports resetCachedApp; handleResetCache)"
       ]
     },
     {
-      "description": "Updated repository metadata/state tracking files (frontend-file-summaries.txt, project_state.json).",
-      "reason": "Not part of REQ-60/61/62 and not required to achieve drawer opacity fixes or cache busting.",
+      "description": "Login screen adds non-requested recovery actions such as retrying connection via full page reload and clearing caches/reloading.",
+      "reason": "BuildRequest explicitly prefers recovery that does not rely only on a full page reload; adding reload/cache-clear actions is beyond the requested clear-auth-to-login recovery.",
       "evidence": [
-        "frontend-file-summaries.txt",
-        "project_state.json"
+        "frontend/src/screens/LoginScreen.tsx (handleRetryConnection uses window.location.reload; imports resetCachedApp; handleClearCachesAndReload)"
+      ]
+    },
+    {
+      "description": "Startup error UI shows extra watchdog diagnostic information (phase/auth/profile flags).",
+      "reason": "Not requested by REQ-22/REQ-23; they only require a clear path back to Login and avoiding blocking loading states.",
+      "evidence": [
+        "frontend/src/components/AppStartupError.tsx (renders Diagnostic Information block when isWatchdogTimeout && diagnostics)"
       ]
     }
   ],
-  "confidence": 0.74,
+  "confidence": 0.64,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/index.html",
-    "frontend/public/sw.js",
-    "frontend/src/components/MobileNavDrawer.tsx",
-    "frontend/src/index.css",
-    "frontend/src/utils/buildInfo.ts",
+    "frontend/src/App.tsx",
+    "frontend/src/components/AppStartupError.tsx",
+    "frontend/src/screens/LoginScreen.tsx",
     "project_state.json"
   ]
 }

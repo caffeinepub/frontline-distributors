@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGetAllProducts, useDeleteProduct } from '../hooks/useQueries';
+import { useGetAllProducts, useDeleteProduct, useGetCallerRole } from '../hooks/useQueries';
 import { useOfflineQueue } from '../offline/useOfflineQueue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 
 export default function ProductsScreen() {
   const { data: products = [], isLoading } = useGetAllProducts();
+  const { data: isAdmin = false } = useGetCallerRole();
   const deleteProduct = useDeleteProduct();
   const { queueAction } = useOfflineQueue();
   
@@ -20,16 +21,29 @@ export default function ProductsScreen() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const handleAdd = () => {
+    if (!isAdmin) {
+      toast.error('Only admins can add products');
+      return;
+    }
     setEditingProduct(null);
     setDialogOpen(true);
   };
 
   const handleEdit = (product: Product) => {
+    if (!isAdmin) {
+      toast.error('Only admins can edit products');
+      return;
+    }
     setEditingProduct(product);
     setDialogOpen(true);
   };
 
   const handleDelete = async (product: Product) => {
+    if (!isAdmin) {
+      toast.error('Only admins can delete products');
+      return;
+    }
+
     if (!confirm(`Delete product "${product.name}"?`)) return;
 
     try {
@@ -62,26 +76,28 @@ export default function ProductsScreen() {
             <CardRow label="Price" value={`₹${Number(product.price).toLocaleString()}`} />
             <CardRow label="Stock" value={stock} />
           </div>
-          <div className="flex gap-2 pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleEdit(product)}
-              className="flex-1 gap-2"
-            >
-              <Pencil className="h-4 w-4" />
-              Edit
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleDelete(product)}
-              className="flex-1 gap-2"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete
-            </Button>
-          </div>
+          {isAdmin && (
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleEdit(product)}
+                className="flex-1 gap-2"
+              >
+                <Pencil className="h-4 w-4" />
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDelete(product)}
+                className="flex-1 gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     );
@@ -96,10 +112,12 @@ export default function ProductsScreen() {
             Manage your inventory and product catalog
           </p>
         </div>
-        <Button onClick={handleAdd} className="gap-2 w-full sm:w-auto">
-          <Plus className="h-4 w-4" />
-          Add Product
-        </Button>
+        {isAdmin && (
+          <Button onClick={handleAdd} className="gap-2 w-full sm:w-auto">
+            <Plus className="h-4 w-4" />
+            Add Product
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -113,7 +131,7 @@ export default function ProductsScreen() {
             </div>
           ) : products.length === 0 ? (
             <div className="py-8 text-center text-muted-foreground">
-              No products found. Add your first product to get started.
+              No products found. {isAdmin ? 'Add your first product to get started.' : ''}
             </div>
           ) : (
             <>
@@ -126,7 +144,7 @@ export default function ProductsScreen() {
                       <TableHead>Price</TableHead>
                       <TableHead>Stock</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      {isAdmin && <TableHead className="text-right">Actions</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -144,24 +162,26 @@ export default function ProductsScreen() {
                               {isLowStock ? 'Low Stock' : 'In Stock'}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEdit(product)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDelete(product)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
+                          {isAdmin && (
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleEdit(product)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDelete(product)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          )}
                         </TableRow>
                       );
                     })}
@@ -174,7 +194,7 @@ export default function ProductsScreen() {
                 <ResponsiveTableCards
                   data={products}
                   renderCard={renderProductCard}
-                  emptyMessage="No products found. Add your first product to get started."
+                  emptyMessage={`No products found. ${isAdmin ? 'Add your first product to get started.' : ''}`}
                 />
               </div>
             </>
@@ -182,11 +202,13 @@ export default function ProductsScreen() {
         </CardContent>
       </Card>
 
-      <ProductDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        product={editingProduct}
-      />
+      {isAdmin && (
+        <ProductDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          product={editingProduct}
+        />
+      )}
     </div>
   );
 }

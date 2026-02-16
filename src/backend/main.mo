@@ -1,10 +1,9 @@
-import Array "mo:core/Array";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
-import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
+import MixinAuthorization "authorization/MixinAuthorization";
 
 actor {
   let accessControlState = AccessControl.initState();
@@ -56,11 +55,172 @@ actor {
     timestamp : Int;
   };
 
+  public type LoginResult = {
+    #ok : UserProfile;
+    #errorMessage : Text;
+  };
+
+  // Persist login state
+  let loggedInPrincipals = Map.empty<Principal, Bool>();
+
+  type OwnerStatus = {
+    var isInitialized : Bool;
+    var password : ?Text;
+  };
+
   let productMap = Map.empty<ProductId, Product>();
   let customerMap = Map.empty<CustomerId, Customer>();
   let billMap = Map.empty<BillId, Bill>();
   let expenseMap = Map.empty<ExpenseId, Expense>();
   let userProfiles = Map.empty<Principal, UserProfile>();
+  let ownerPrincipals = Map.empty<Principal, Bool>();
+
+  let defaultOwnerStatus : OwnerStatus = {
+    var isInitialized = false;
+    var password = ?"24161852";
+  };
+
+  let ownerStatusMap = Map.fromIter<Principal, OwnerStatus>(
+    [(Principal.fromText("2vxsx-fae"), defaultOwnerStatus)].values()
+  );
+
+  public shared ({ caller }) func changeOwnerPassword(currentPassword : Text, newPassword : Text) : async LoginResult {
+    if (caller.isAnonymous()) {
+      return #errorMessage("Anonymous Principal accounts cannot be authenticated as they lack private keys.");
+    };
+    let ownerStatus = switch (ownerStatusMap.get(caller)) {
+      case (null) {
+        let newStatus : OwnerStatus = {
+          var isInitialized = false;
+          var password = ?"24161852";
+        };
+        ownerStatusMap.add(caller, newStatus);
+        newStatus;
+      };
+      case (?status) { status };
+    };
+
+    switch (ownerStatus.password) {
+      case (?oldPassword) {
+        if (oldPassword != currentPassword) {
+          return #errorMessage("Incorrect password");
+        };
+        ownerStatus.password := ?newPassword;
+
+        if (not ownerStatus.isInitialized) {
+          ownerStatus.isInitialized := true;
+          ownerPrincipals.add(caller, true);
+        };
+
+        let profile = {
+          name = "Owner";
+          role = "owner";
+        };
+
+        performOwnerBootstrap(caller);
+
+        userProfiles.add(caller, profile);
+
+        #ok(profile);
+      };
+      case (null) {
+        #errorMessage("Password not set correctly");
+      };
+    };
+  };
+
+  public shared ({ caller }) func loginAsOwner(passwordAttempt : Text) : async LoginResult {
+    if (caller.isAnonymous()) {
+      return #errorMessage("Anonymous Principal accounts cannot be authenticated as they lack private keys.");
+    };
+    let ownerStatus = switch (ownerStatusMap.get(caller)) {
+      case (null) {
+        let newStatus : OwnerStatus = {
+          var isInitialized = false;
+          var password = ?"24161852";
+        };
+        ownerStatusMap.add(caller, newStatus);
+        newStatus;
+      };
+      case (?status) { status };
+    };
+
+    switch (ownerStatus.password) {
+      case (?password) {
+        if (passwordAttempt == password) {
+          if (not ownerStatus.isInitialized) {
+            ownerStatus.isInitialized := true;
+            ownerPrincipals.add(caller, true);
+          };
+
+          let profile = {
+            name = "Owner";
+            role = "owner";
+          };
+
+          performOwnerBootstrap(caller);
+
+          userProfiles.add(caller, profile);
+
+          #ok(profile);
+        } else {
+          #errorMessage("Incorrect password");
+        };
+      };
+      case (null) {
+        #errorMessage("Password not set correctly");
+      };
+    };
+  };
+
+  // Unifies admin role and owner bootstrap
+  // This function is called only from owner login endpoints (loginAsOwner, changeOwnerPassword)
+  // It directly assigns admin role without requiring the caller to already be an admin
+  func performOwnerBootstrap(caller : Principal) {
+    let currentRole = AccessControl.getUserRole(accessControlState, caller);
+
+    switch (currentRole) {
+      case (#guest or #user) {
+        // Owner intended to be admin, initialize as admin if not already
+        // Temporary fix: Call initialize with predefined and user-provided tokens
+        // This now matches the expected access-control.mo signature
+        AccessControl.initialize(accessControlState, caller, "ADMIN_TOKEN_OMK", "USER_TOKEN_OMK");
+
+        AccessControl.assignRole(accessControlState, caller, caller, #admin);
+      };
+      case (#admin) {
+        // Already admin, do nothing
+      };
+    };
+  };
+
+  public shared ({ caller }) func loginAsSalesman(password : Text) : async LoginResult {
+    if (caller.isAnonymous()) {
+      return #errorMessage("Anonymous Principal accounts cannot be authenticated as they lack private keys.");
+    };
+
+    if (password == "9961824357") {
+      // For salesman login, check admin privileges before role assignment
+      if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
+        // Check if caller is admin (can assign roles)
+        if (not AccessControl.isAdmin(accessControlState, caller)) {
+          return #errorMessage("Unauthorized: Only admins can assign user roles");
+        };
+        // Caller is admin, can assign user role to themselves
+        AccessControl.assignRole(accessControlState, caller, caller, #user);
+      };
+
+      let profile = {
+        name = "Salesman";
+        role = "salesman";
+      };
+      userProfiles.add(caller, profile);
+
+      return #ok(profile);
+    } else {
+      return #errorMessage("Incorrect password");
+    };
+  };
 
   // User Profile Management
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
@@ -177,8 +337,9 @@ actor {
     for (product in bill.products.values()) {
       switch (productMap.get(product.id)) {
         case (?existingProduct) {
+          let newAvailableInventory = Nat.sub(existingProduct.availableInventory, 1);
           let updatedProduct = {
-            existingProduct with availableInventory = existingProduct.availableInventory - 1;
+            existingProduct with availableInventory = newAvailableInventory;
           };
           productMap.add(product.id, updatedProduct);
         };
@@ -262,5 +423,49 @@ actor {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can perform this action");
     };
+  };
+
+  // New query to test login state for debugging and frontend purposes
+  public query ({ caller }) func isCallerLoggedIn() : async Bool {
+    switch (loggedInPrincipals.get(caller)) {
+      case (?true) { true };
+      case (_) { false };
+    };
+  };
+
+  // New endpoint to logout/clear login state
+  public shared ({ caller }) func logout() : async () {
+    loggedInPrincipals.remove(caller);
+  };
+
+  // Owner status helper query
+  public query ({ caller }) func getOwnerStatus() : async Bool {
+    switch (ownerStatusMap.get(caller)) {
+      case (null) { false };
+      case (?_) { true };
+    };
+  };
+
+  // Unified create/update owner (unused helper)
+  func createOrUpdateOwnerStatus(principal : Principal, password : Text) {
+    switch (ownerStatusMap.get(principal)) {
+      case (null) {
+        let newStatus : OwnerStatus = {
+          var isInitialized = true;
+          var password = ?password;
+        };
+        ownerStatusMap.add(principal, newStatus);
+      };
+      case (?status) {
+        status.password := ?password;
+        status.isInitialized := true;
+      };
+    };
+  };
+
+  // Bootstrap admin principal (unused helper)
+  func bootstrapAdmin(principal : Principal, password : Text) {
+    ownerPrincipals.add(principal, true);
+    createOrUpdateOwnerStatus(principal, password);
   };
 };

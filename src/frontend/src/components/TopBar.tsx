@@ -1,103 +1,92 @@
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { useState } from 'react';
+import { usePasswordAuth } from '../auth/passwordAuth';
 import { useGetCallerUserProfile } from '../hooks/useQueries';
-import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Download, Menu } from 'lucide-react';
+import { Menu, User, LogOut, ChevronDown } from 'lucide-react';
 import SyncIndicator from './SyncIndicator';
-import { toast } from 'sonner';
-import { usePWAInstall } from '../hooks/usePWAInstall';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface TopBarProps {
-  onMobileMenuClick?: () => void;
+  onMenuClick: () => void;
 }
 
-export default function TopBar({ onMobileMenuClick }: TopBarProps) {
-  const { clear, identity } = useInternetIdentity();
+export default function TopBar({ onMenuClick }: TopBarProps) {
+  const { logout } = usePasswordAuth();
   const { data: userProfile } = useGetCallerUserProfile();
   const queryClient = useQueryClient();
-  const { isInstallable, promptInstall } = usePWAInstall();
+  const [showProfile, setShowProfile] = useState(false);
 
-  const handleLogout = async () => {
-    try {
-      await clear();
-      queryClient.clear();
-      toast.success('Logged out successfully');
-    } catch (error) {
-      console.error('Logout error:', error);
-      toast.error('Failed to logout');
-    }
-  };
-
-  const handleInstall = async () => {
-    try {
-      await promptInstall();
-      toast.success('App installation prompt shown');
-    } catch (error) {
-      console.error('Install error:', error);
-      toast.info('To install, use your browser\'s "Add to Home Screen" option');
-    }
+  const handleLogout = () => {
+    logout();
+    queryClient.clear();
   };
 
   return (
-    <header className="border-b bg-card">
-      <div className="flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6 gap-2">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          {/* Mobile Menu Button */}
-          {onMobileMenuClick && (
+    <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex h-14 items-center gap-2 px-3 sm:gap-4 sm:px-6">
+        {/* Mobile menu button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          onClick={onMenuClick}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+
+        {/* Logo/Title */}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <h1 className="text-base sm:text-lg font-semibold truncate">
+            Frontline Distributors
+          </h1>
+        </div>
+
+        {/* Sync indicator - compact on mobile */}
+        <div className="flex-shrink-0">
+          <SyncIndicator />
+        </div>
+
+        {/* User profile - collapsible on mobile */}
+        {userProfile && (
+          <div className="relative flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
-              onClick={onMobileMenuClick}
-              className="md:hidden p-2"
+              className="gap-1 sm:gap-2 px-2 sm:px-3"
+              onClick={() => setShowProfile(!showProfile)}
             >
-              <Menu className="h-5 w-5" />
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline max-w-[120px] truncate">
+                {userProfile.name}
+              </span>
+              <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
-          )}
-          <h1 className="text-base sm:text-lg md:text-xl font-bold truncate">Frontline Distributors</h1>
-        </div>
-        
-        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-shrink-0">
-          {/* Sync Indicator */}
-          <div className="hidden sm:block">
-            <SyncIndicator />
+
+            {showProfile && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowProfile(false)}
+                />
+                <div className="absolute right-0 top-full mt-2 w-48 rounded-md border bg-popover p-2 shadow-lg z-50">
+                  <div className="px-3 py-2 border-b mb-2">
+                    <p className="font-medium text-sm">{userProfile.name}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{userProfile.role}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start gap-2"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
-          
-          {/* Install App Button - PWA only, hidden on small screens */}
-          {isInstallable && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleInstall}
-              className="hidden lg:flex gap-2"
-            >
-              <Download className="h-4 w-4" />
-              <span className="hidden xl:inline">Add to Home Screen</span>
-              <span className="xl:hidden">Install</span>
-            </Button>
-          )}
-          
-          {/* User Info - Compact on mobile */}
-          {userProfile && (
-            <div className="hidden sm:flex items-center gap-2 rounded-lg bg-muted px-2 py-1.5 sm:px-3 sm:py-2">
-              <User className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-              <div className="text-xs sm:text-sm min-w-0">
-                <div className="font-medium truncate max-w-[80px] sm:max-w-none">{userProfile.name}</div>
-                <div className="text-[10px] sm:text-xs text-muted-foreground hidden md:block">{userProfile.role}</div>
-              </div>
-            </div>
-          )}
-          
-          {/* Logout Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLogout}
-            className="gap-1 sm:gap-2 px-2 sm:px-3"
-          >
-            <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Logout</span>
-          </Button>
-        </div>
+        )}
       </div>
     </header>
   );

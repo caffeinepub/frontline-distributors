@@ -7,6 +7,7 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
+export type BillId = bigint;
 export type CustomerId = bigint;
 export type ExpenseId = bigint;
 export interface Bill {
@@ -21,7 +22,13 @@ export interface Bill {
     products: Array<Product>;
 }
 export type ProductId = bigint;
-export type BillId = bigint;
+export type LoginResult = {
+    __kind__: "ok";
+    ok: UserProfile;
+} | {
+    __kind__: "errorMessage";
+    errorMessage: string;
+};
 export interface Expense {
     id: ExpenseId;
     description: string;
@@ -54,6 +61,7 @@ export enum UserRole {
 }
 export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    changeOwnerPassword(currentPassword: string, newPassword: string): Promise<LoginResult>;
     createBill(bill: Bill): Promise<void>;
     createCustomer(customer: Customer): Promise<void>;
     createExpense(expense: Expense): Promise<void>;
@@ -71,9 +79,14 @@ export interface backendInterface {
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getCustomer(cid: CustomerId): Promise<Customer>;
+    getOwnerStatus(): Promise<boolean>;
     getProduct(_pid: ProductId): Promise<Product>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
+    isCallerLoggedIn(): Promise<boolean>;
+    loginAsOwner(passwordAttempt: string): Promise<LoginResult>;
+    loginAsSalesman(password: string): Promise<LoginResult>;
+    logout(): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     syncExpenses(expenses: Array<Expense>): Promise<void>;
     updateCustomer(customer: Customer): Promise<void>;

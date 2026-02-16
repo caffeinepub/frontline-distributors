@@ -1,72 +1,55 @@
 {
   "kind": "build_request",
-  "title": "Make mobile navigation drawer and overlay fully opaque, then redeploy with a fresh preview link",
+  "title": "Fix app startup so the Login screen is always reachable and not blocked by loading/profile gating",
   "priority": "high",
   "requirements": [
     {
-      "id": "REQ-60",
-      "text": "Fix the mobile hamburger navigation drawer so that both the drawer surface and its overlay/backdrop are fully opaque (no translucency) and the navigation items are always readable on mobile, in both light and dark themes.",
+      "id": "REQ-22",
+      "text": "Ensure the application always allows the user to reach and use the Login screen, even if a previous session left `isAuthenticated=true` in localStorage and the backend actor/user profile cannot be fetched (e.g., actor initialization stalls or fails). The app must not remain indefinitely on the full-screen \"Loading...\" state in a way that prevents login interaction.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-11"
+          "msg-4"
         ],
         "quotes": [
-          "make the drawer background and its overlay fully opaque so the menu items are always readable."
+          "login is still not accessable"
         ]
       },
       "acceptanceCriteria": [
-        "On a small/mobile viewport, opening the hamburger menu shows a fully opaque drawer surface (no transparency) in both light and dark themes.",
-        "The overlay/backdrop behind the drawer is fully opaque (no transparency) and does not use blur/backdrop-filter effects that reduce readability.",
-        "All navigation labels (Dashboard, Products, Billing, Customers, Credits, Reports) remain clearly readable against the drawer background.",
-        "Change is implemented without modifying any files under frontend/src/components/ui (immutable shadcn path constraint)."
+        "If the backend actor is unavailable (null) or still initializing, the user can still see a usable Login screen UI (role selector and password input remain interactive; only the Login button may be disabled when appropriate).",
+        "If a stored password-auth session causes the app to attempt profile fetch but the profile query cannot run because the actor is not ready, the app must not lock the user into the global loading screen; it must offer a clear path back to login.",
+        "All user-facing messages involved in this flow are in English."
       ]
     },
     {
-      "id": "REQ-61",
-      "text": "Force clients to pick up the fresh build assets after redeploy by bumping the app build identifier and the PWA service worker cache version.",
+      "id": "REQ-23",
+      "text": "Add a clear recovery action whenever startup/profile loading fails or stalls that lets the user return to Login by clearing password-auth state (logout/clearAuth) without requiring manual cache clearing. This recovery action must be visible on the relevant error/timeout UI and must not rely only on a full page reload.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-11"
+          "msg-4"
         ],
         "quotes": [
-          "deploy a fresh version and give you a new preview link."
+          "login is still not accessable"
         ]
       },
       "acceptanceCriteria": [
-        "Increment the build identifier in frontend/src/utils/buildInfo.ts so the app detects a new deployment.",
-        "Increment the service worker cache version constant in frontend/public/sw.js (e.g., v3 -> v4) so previously cached assets are not reused.",
-        "After deployment, a hard refresh is not required for most clients to see the updated drawer/overlay styling."
-      ]
-    },
-    {
-      "id": "REQ-62",
-      "text": "Deploy a fresh Draft build of the app and provide a new shareable preview link (do not reuse the previous draft link).",
-      "target": "unknown",
-      "source": {
-        "messageIds": [
-          "msg-11"
-        ],
-        "quotes": [
-          "deploy a fresh version and give you a new preview link."
-        ]
-      },
-      "acceptanceCriteria": [
-        "A new Draft deployment is created successfully.",
-        "A new preview URL is generated and shared that is different from the previous draft URL."
+        "When the startup watchdog timeout screen is shown, there is a visible action (button) that clears the password-auth session and returns the UI to the Login screen.",
+        "When the app shows a profile fetch error state (the existing AppStartupError path), the user can choose an option that clears the password-auth session and returns to the Login screen.",
+        "Using the recovery action does not leave the app stuck in a loading/disabled state; login inputs remain usable immediately after returning to the Login screen.",
+        "All user-facing button labels and help text added/changed are in English."
       ]
     }
   ],
   "constraints": [
-    "Use English for any user-facing text.",
-    "Do not modify immutable frontend paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
-    "Stay focused on the website/PWA experience; do not add or change Android APK wrapper distribution as part of this request."
+    "Do not edit files under frontend/src/hooks/useInternetIdentity.ts or frontend/src/hooks/useInternetIdentity.tsx (immutable).",
+    "Do not edit frontend/src/hooks/useActor.ts (immutable). Compose behavior by changing non-immutable components/screens (e.g., App.tsx, screens, and components).",
+    "Keep user-facing error normalization behavior consistent with existing toast + normalizeAuthError patterns; do not expose raw technical reject prefixes."
   ],
   "nonGoals": [
-    "Do not change navigation items, routes, or screen behavior beyond opacity/readability fixes for the mobile drawer.",
-    "Do not add new authentication methods or backend features.",
-    "Do not redesign the overall app theme beyond what is required to make the drawer and overlay fully opaque and readable."
+    "Do not change the Salesman vs Owner authentication rules or backend authorization behavior as part of this request.",
+    "Do not add new authentication providers or third-party login integrations.",
+    "Do not redesign non-login screens (Dashboard/Products/Billing/etc.) beyond what is necessary to prevent login inaccessibility."
   ],
   "imageRequirements": {
     "required": [],

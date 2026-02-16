@@ -18,37 +18,29 @@ export async function resetCachedApp(): Promise<void> {
       console.warn('Failed to clear sessionStorage:', e);
     }
 
-    // Clear Cache Storage if available
+    // Clear Cache Storage
     if ('caches' in window) {
       try {
         const cacheNames = await caches.keys();
-        await Promise.all(
-          cacheNames.map(cacheName => caches.delete(cacheName))
-        );
-        console.log('Cleared Cache Storage:', cacheNames);
+        await Promise.all(cacheNames.map((name) => caches.delete(name)));
       } catch (e) {
         console.warn('Failed to clear Cache Storage:', e);
       }
     }
 
-    // Unregister service workers if available
+    // Unregister service workers
     if ('serviceWorker' in navigator) {
       try {
         const registrations = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(
-          registrations.map(registration => registration.unregister())
-        );
-        console.log('Unregistered service workers:', registrations.length);
+        await Promise.all(registrations.map((reg) => reg.unregister()));
       } catch (e) {
         console.warn('Failed to unregister service workers:', e);
       }
     }
-
-    // Reload the page
-    window.location.reload();
-  } catch (error) {
-    console.error('Error during app reset:', error);
-    // Force reload even if reset partially failed
+  } catch (e) {
+    console.error('Error during app reset:', e);
+  } finally {
+    // Always reload, even if some cleanup steps failed
     window.location.reload();
   }
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGetAllCustomers, useGetAllProducts, useGetAllBills, useCreateBill } from '../hooks/useQueries';
+import { useGetAllCustomers, useGetAllProducts, useGetAllBills, useCreateBill, useGetCallerRole } from '../hooks/useQueries';
 import { useOfflineQueue } from '../offline/useOfflineQueue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -140,7 +140,7 @@ export default function BillingScreen() {
       });
 
       toast.success('Bill created successfully');
-
+      
       // Reset form
       setSelectedCustomerId('');
       setBillLines([]);
@@ -156,7 +156,7 @@ export default function BillingScreen() {
 
   const recentBills = [...bills]
     .sort((a, b) => Number(b.timestamp) - Number(a.timestamp))
-    .slice(0, 10);
+    .slice(0, 5);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -168,7 +168,7 @@ export default function BillingScreen() {
       </div>
 
       <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-        {/* New Bill Form */}
+        {/* Create Bill Form */}
         <Card>
           <CardHeader>
             <CardTitle>New Bill</CardTitle>
@@ -180,7 +180,7 @@ export default function BillingScreen() {
                 <SelectTrigger id="customer">
                   <SelectValue placeholder="Select customer" />
                 </SelectTrigger>
-                <SelectContent className="bg-popover text-popover-foreground border-border">
+                <SelectContent>
                   {customers.map((customer) => (
                     <SelectItem key={customer.id.toString()} value={customer.id.toString()}>
                       {customer.name}
@@ -190,162 +190,184 @@ export default function BillingScreen() {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>Add Products</Label>
-              <Select value={selectedProductId} onValueChange={setSelectedProductId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select product" />
-                </SelectTrigger>
-                <SelectContent className="bg-popover text-popover-foreground border-border">
-                  {products.map((product) => (
-                    <SelectItem key={product.id.toString()} value={product.id.toString()}>
-                      {product.name} - ₹{Number(product.price)} (Stock: {Number(product.availableInventory)})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Input
-                  type="number"
-                  min="1"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                  placeholder="Qty"
-                  className="w-full sm:w-24"
-                />
-                <Select value={quantityUnit} onValueChange={(value: 'pieces' | 'cases') => setQuantityUnit(value)}>
-                  <SelectTrigger className="w-full sm:w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover text-popover-foreground border-border">
-                    <SelectItem value="pieces">Pieces</SelectItem>
-                    <SelectItem value="cases">Cases</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button onClick={handleAddLine} className="w-full sm:flex-1">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add
-                </Button>
-              </div>
-            </div>
-
-            {billLines.length > 0 && (
-              <div className="space-y-2">
-                <Label>Bill Items</Label>
-                <div className="border rounded-lg overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="min-w-[120px]">Product</TableHead>
-                        <TableHead className="min-w-[60px]">Qty</TableHead>
-                        <TableHead className="min-w-[80px]">Price</TableHead>
-                        <TableHead className="w-[50px]"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {billLines.map((line, index) => (
-                        <TableRow key={index}>
-                          <TableCell className="font-medium">{line.product.name}</TableCell>
-                          <TableCell>{line.quantity}</TableCell>
-                          <TableCell>₹{(Number(line.product.price) * line.quantity).toLocaleString()}</TableCell>
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleRemoveLine(index)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="gst-switch">Apply GST</Label>
-                <Switch
-                  id="gst-switch"
-                  checked={gstApplied}
-                  onCheckedChange={setGstApplied}
-                />
-              </div>
-
-              {gstApplied && (
+            <div className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-1 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="gst-rate">GST Rate</Label>
-                  <Select value={gstRate} onValueChange={setGstRate}>
-                    <SelectTrigger id="gst-rate">
-                      <SelectValue />
+                  <Label htmlFor="product">Product</Label>
+                  <Select value={selectedProductId} onValueChange={setSelectedProductId}>
+                    <SelectTrigger id="product">
+                      <SelectValue placeholder="Select product" />
                     </SelectTrigger>
-                    <SelectContent className="bg-popover text-popover-foreground border-border">
-                      {GST_RATES.map((rate) => (
-                        <SelectItem key={rate.value} value={rate.value}>
-                          {rate.label}
+                    <SelectContent>
+                      {products.map((product) => (
+                        <SelectItem key={product.id.toString()} value={product.id.toString()}>
+                          {product.name} - ₹{Number(product.price)}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-              )}
 
-              <div className="space-y-2">
-                <Label htmlFor="discount">Discount (₹)</Label>
-                <Input
-                  id="discount"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={discount}
-                  onChange={(e) => setDiscount(e.target.value)}
-                  placeholder="0.00"
-                />
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="quantity">Quantity</Label>
+                    <Input
+                      id="quantity"
+                      type="number"
+                      min="1"
+                      value={quantity}
+                      onChange={(e) => setQuantity(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="unit">Unit</Label>
+                    <Select value={quantityUnit} onValueChange={(v) => setQuantityUnit(v as 'pieces' | 'cases')}>
+                      <SelectTrigger id="unit">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pieces">Pieces</SelectItem>
+                        <SelectItem value="cases">Cases</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="credit">Credit Amount (₹)</Label>
-                <Input
-                  id="credit"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={creditAmount}
-                  onChange={(e) => setCreditAmount(e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
+              <Button onClick={handleAddLine} className="w-full gap-2">
+                <Plus className="h-4 w-4" />
+                Add to Bill
+              </Button>
             </div>
 
-            <div className="space-y-2 pt-3 border-t">
-              <div className="flex justify-between text-sm">
-                <span>Subtotal:</span>
-                <span>₹{subtotal.toLocaleString()}</span>
-              </div>
-              {discountAmount > 0 && (
-                <div className="flex justify-between text-sm text-destructive">
-                  <span>Discount:</span>
-                  <span>-₹{discountAmount.toLocaleString()}</span>
+            {billLines.length > 0 && (
+              <div className="space-y-3">
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="max-h-[200px] overflow-y-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[40%]">Product</TableHead>
+                          <TableHead className="w-[20%] text-right">Qty</TableHead>
+                          <TableHead className="w-[30%] text-right">Amount</TableHead>
+                          <TableHead className="w-[10%]"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {billLines.map((line, index) => (
+                          <TableRow key={index}>
+                            <TableCell className="font-medium text-sm">{line.product.name}</TableCell>
+                            <TableCell className="text-right text-sm">{line.quantity}</TableCell>
+                            <TableCell className="text-right text-sm">
+                              ₹{(Number(line.product.price) * line.quantity).toLocaleString()}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveLine(index)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
-              )}
-              {gstApplied && (
-                <div className="flex justify-between text-sm">
-                  <span>GST ({gstRate}%):</span>
-                  <span>₹{totals.gstAmount.toLocaleString()}</span>
-                </div>
-              )}
-              <div className="flex justify-between font-bold text-base sm:text-lg pt-2 border-t">
-                <span>Total:</span>
-                <span>₹{totals.finalTotal.toLocaleString()}</span>
-              </div>
-            </div>
 
-            <Button onClick={handleCreateBill} className="w-full" size="lg">
-              Create Bill
-            </Button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="discount">Discount (₹)</Label>
+                    <Input
+                      id="discount"
+                      type="number"
+                      min="0"
+                      value={discount}
+                      onChange={(e) => setDiscount(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="credit">Credit Amount (₹)</Label>
+                    <Input
+                      id="credit"
+                      type="number"
+                      min="0"
+                      value={creditAmount}
+                      onChange={(e) => setCreditAmount(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3 border-t pt-3">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="gst-toggle">Apply GST</Label>
+                    <Switch
+                      id="gst-toggle"
+                      checked={gstApplied}
+                      onCheckedChange={setGstApplied}
+                    />
+                  </div>
+                  {gstApplied && (
+                    <div className="space-y-2">
+                      <Label htmlFor="gst-rate">GST Rate</Label>
+                      <Select value={gstRate} onValueChange={setGstRate}>
+                        <SelectTrigger id="gst-rate">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {GST_RATES.map((rate) => (
+                            <SelectItem key={rate.value} value={rate.value}>
+                              {rate.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2 border-t pt-3">
+                  <div className="flex justify-between text-sm">
+                    <span>Subtotal:</span>
+                    <span>₹{subtotal.toLocaleString()}</span>
+                  </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>Discount:</span>
+                      <span>-₹{discountAmount.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {gstApplied && (
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>GST ({gstRate}%):</span>
+                      <span>₹{totals.gstAmount.toLocaleString()}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-semibold text-lg border-t pt-2">
+                    <span>Total:</span>
+                    <span>₹{totals.finalTotal.toLocaleString()}</span>
+                  </div>
+                  {creditAmt > 0 && (
+                    <>
+                      <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>Credit:</span>
+                        <span>₹{creditAmt.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between font-semibold">
+                        <span>Amount Due:</span>
+                        <span>₹{Math.max(0, totals.finalTotal - creditAmt).toLocaleString()}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <Button onClick={handleCreateBill} className="w-full" size="lg">
+                  Create Bill
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -366,28 +388,31 @@ export default function BillingScreen() {
                   const total = calculateBillTotal(bill);
                   
                   return (
-                    <Card key={bill.id.toString()} className="overflow-hidden">
-                      <CardContent className="p-3 sm:p-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                          <div className="min-w-0 flex-1">
-                            <p className="font-medium truncate">{customer?.name || 'Unknown'}</p>
-                            <p className="text-xs sm:text-sm text-muted-foreground">
-                              {new Date(Number(bill.timestamp)).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <span className="font-bold whitespace-nowrap">₹{total.toLocaleString()}</span>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => printInvoice(bill, customer!)}
-                            >
-                              <Printer className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <div
+                      key={bill.id.toString()}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 border rounded-lg"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{customer?.name || 'Unknown'}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(Number(bill.timestamp)).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold whitespace-nowrap">
+                          ₹{total.toLocaleString()}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => customer && printInvoice(bill, customer)}
+                          className="gap-2"
+                        >
+                          <Printer className="h-4 w-4" />
+                          <span className="hidden sm:inline">Print</span>
+                        </Button>
+                      </div>
+                    </div>
                   );
                 })}
               </div>

@@ -1,6 +1,52 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { Product, Customer, Bill, UserProfile, Expense } from '../backend';
+import { usePasswordAuth } from '../auth/passwordAuth';
+import type { Product, Customer, Bill, UserProfile, Expense, LoginResult } from '../backend';
+
+// ============================================================================
+// Authentication Queries
+// ============================================================================
+
+export function useLoginAsOwner() {
+  const { actor } = useActor();
+
+  return useMutation({
+    mutationFn: async (password: string): Promise<LoginResult> => {
+      if (!actor) {
+        throw new Error('Unable to connect to server. Please wait and try again.');
+      }
+      return actor.loginAsOwner(password);
+    },
+  });
+}
+
+export function useLoginAsSalesman() {
+  const { actor } = useActor();
+
+  return useMutation({
+    mutationFn: async (password: string): Promise<LoginResult> => {
+      if (!actor) {
+        throw new Error('Unable to connect to server. Please wait and try again.');
+      }
+      return actor.loginAsSalesman(password);
+    },
+  });
+}
+
+export function useGetCallerRole() {
+  const { actor, isFetching: actorFetching } = useActor();
+  const { isAuthenticated } = usePasswordAuth();
+
+  return useQuery({
+    queryKey: ['callerRole'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.isCallerAdmin();
+    },
+    enabled: !!actor && !actorFetching && isAuthenticated,
+    retry: false,
+  });
+}
 
 // ============================================================================
 // User Profile Queries
@@ -8,6 +54,7 @@ import type { Product, Customer, Bill, UserProfile, Expense } from '../backend';
 
 export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
+  const { isAuthenticated } = usePasswordAuth();
 
   const query = useQuery<UserProfile | null>({
     queryKey: ['currentUserProfile'],
@@ -15,7 +62,7 @@ export function useGetCallerUserProfile() {
       if (!actor) throw new Error('Actor not available');
       return actor.getCallerUserProfile();
     },
-    enabled: !!actor && !actorFetching,
+    enabled: !!actor && !actorFetching && isAuthenticated,
     retry: false,
   });
 
@@ -23,7 +70,7 @@ export function useGetCallerUserProfile() {
   return {
     ...query,
     isLoading: actorFetching || query.isLoading,
-    isFetched: !!actor && query.isFetched,
+    isFetched: !!actor && isAuthenticated && query.isFetched,
   };
 }
 
@@ -48,6 +95,7 @@ export function useSaveCallerUserProfile() {
 
 export function useGetAllProducts() {
   const { actor, isFetching } = useActor();
+  const { isAuthenticated } = usePasswordAuth();
 
   return useQuery<Product[]>({
     queryKey: ['products'],
@@ -55,7 +103,7 @@ export function useGetAllProducts() {
       if (!actor) return [];
       return actor.getAllProducts();
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor && !isFetching && isAuthenticated,
   });
 }
 
@@ -110,6 +158,7 @@ export function useDeleteProduct() {
 
 export function useGetAllCustomers() {
   const { actor, isFetching } = useActor();
+  const { isAuthenticated } = usePasswordAuth();
 
   return useQuery<Customer[]>({
     queryKey: ['customers'],
@@ -117,7 +166,7 @@ export function useGetAllCustomers() {
       if (!actor) return [];
       return actor.getAllCustomers();
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor && !isFetching && isAuthenticated,
   });
 }
 
@@ -172,6 +221,7 @@ export function useDeleteCustomer() {
 
 export function useGetAllBills() {
   const { actor, isFetching } = useActor();
+  const { isAuthenticated } = usePasswordAuth();
 
   return useQuery<Bill[]>({
     queryKey: ['bills'],
@@ -179,7 +229,7 @@ export function useGetAllBills() {
       if (!actor) return [];
       return actor.getAllBills();
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor && !isFetching && isAuthenticated,
   });
 }
 
@@ -220,6 +270,7 @@ export function useDeleteBill() {
 
 export function useGetAllExpenses() {
   const { actor, isFetching } = useActor();
+  const { isAuthenticated } = usePasswordAuth();
 
   return useQuery<Expense[]>({
     queryKey: ['expenses'],
@@ -227,7 +278,7 @@ export function useGetAllExpenses() {
       if (!actor) return [];
       return actor.getAllExpenses();
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor && !isFetching && isAuthenticated,
   });
 }
 
@@ -246,21 +297,6 @@ export function useCreateExpense() {
   });
 }
 
-export function useSyncExpenses() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (expenses: Expense[]) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.syncExpenses(expenses);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
-    },
-  });
-}
-
 export function useDeleteExpense() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
@@ -269,6 +305,21 @@ export function useDeleteExpense() {
     mutationFn: async (expenseId: bigint) => {
       if (!actor) throw new Error('Actor not available');
       await actor.deleteExpense(expenseId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+    },
+  });
+}
+
+export function useSyncExpenses() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (expenses: Expense[]) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.syncExpenses(expenses);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });

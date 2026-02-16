@@ -2,11 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-mobile-hamburger-navigation-drawer-so-that-both-the-drawer-surface-and-its-overlay-backdrop-are-fully-opaque-no-translucency-and-the-navigation-items-are-always-readable-on-mobile-in-both-light-and-dark-themes",
-      "featureTitle": "Fix the mobile hamburger navigation drawer so that both the drawer surface and its overlay/backdrop are fully opaque (no translucency) and the navigation items are always readable on mobile, in both light and dark themes.",
+      "featureId": "feature-ensure-the-application-always-allows-the-user-to-reach-and-use-the-login-screen-even-if-a-previous-session-left-isauthenticated-true-in-localstorage-and-the-backend-actor-user-profile-cannot-be-fetched-e-g-actor-initialization-stalls-or-fails-the-app-must-not-remain-indefinitely-on-the-full-screen-loading-state-in-a-way-that-prevents-login-interaction",
+      "featureTitle": "Ensure the application always allows the user to reach and use the Login screen, even if a previous session left `isAuthenticated=true` in localStorage and the backend actor/user profile cannot be fetched (e.g., actor initialization stalls or fails). The app must not remain indefinitely on the full-screen \"Loading...\" state in a way that prevents login interaction.",
       "files": [
-        "frontend/src/components/MobileNavDrawer.tsx",
-        "frontend/src/index.css"
+        "frontend/src/App.tsx",
+        "frontend/src/screens/LoginScreen.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -17,17 +17,17 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-60"
+        "REQ-22"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-force-clients-to-pick-up-the-fresh-build-assets-after-redeploy-by-bumping-the-app-build-identifier-and-the-pwa-service-worker-cache-version",
-      "featureTitle": "Force clients to pick up the fresh build assets after redeploy by bumping the app build identifier and the PWA service worker cache version.",
+      "featureId": "feature-add-a-clear-recovery-action-whenever-startup-profile-loading-fails-or-stalls-that-lets-the-user-return-to-login-by-clearing-password-auth-state-logout-clearauth-without-requiring-manual-cache-clearing-this-recovery-action-must-be-visible-on-the-relevant-error-timeout-ui-and-must-not-rely-only-on-a-full-page-reload",
+      "featureTitle": "Add a clear recovery action whenever startup/profile loading fails or stalls that lets the user return to Login by clearing password-auth state (logout/clearAuth) without requiring manual cache clearing. This recovery action must be visible on the relevant error/timeout UI and must not rely only on a full page reload.",
       "files": [
-        "frontend/index.html",
-        "frontend/public/sw.js",
-        "frontend/src/utils/buildInfo.ts"
+        "frontend/src/App.tsx",
+        "frontend/src/components/AppStartupError.tsx",
+        "frontend/src/screens/LoginScreen.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -38,7 +38,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-61"
+        "REQ-23"
       ],
       "confidence": "high"
     }

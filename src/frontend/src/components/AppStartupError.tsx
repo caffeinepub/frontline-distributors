@@ -1,13 +1,15 @@
-import { AlertCircle, RefreshCw, AlertTriangle } from 'lucide-react';
+import { AlertCircle, RefreshCw, AlertTriangle, LogOut, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { resetCachedApp } from '@/utils/resetCachedApp';
+import { normalizeAuthError } from '@/utils/authErrors';
 import type { StartupDiagnostics } from '@/hooks/useStartupWatchdog';
 
 interface AppStartupErrorProps {
   error: Error | unknown;
   onRetry: () => void;
+  onClearAuth?: () => void;
   diagnostics?: StartupDiagnostics | null;
   isWatchdogTimeout?: boolean;
 }
@@ -15,13 +17,26 @@ interface AppStartupErrorProps {
 export default function AppStartupError({ 
   error, 
   onRetry, 
+  onClearAuth,
   diagnostics,
   isWatchdogTimeout = false 
 }: AppStartupErrorProps) {
-  const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+  const rawErrorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+  const errorMessage = normalizeAuthError(rawErrorMessage);
+  
+  // Check if this is an authorization error
+  const isAuthError = rawErrorMessage.includes('Unauthorized') || 
+                      rawErrorMessage.includes('Only admins') || 
+                      rawErrorMessage.includes('Only users');
   
   const handleResetCache = async () => {
     await resetCachedApp();
+  };
+
+  const handleClearAuthAndReturnToLogin = () => {
+    if (onClearAuth) {
+      onClearAuth();
+    }
   };
 
   return (
@@ -37,74 +52,65 @@ export default function AppStartupError({
               )}
             </div>
             <div>
-              <CardTitle>
-                {isWatchdogTimeout ? 'Startup Timeout' : 'Unable to Start Application'}
+              <CardTitle className="text-xl">
+                {isWatchdogTimeout ? 'Startup Timeout' : isAuthError ? 'Access Denied' : 'Startup Error'}
               </CardTitle>
               <CardDescription>
                 {isWatchdogTimeout 
-                  ? 'The application took too long to load'
-                  : 'We encountered an error while loading your profile'
-                }
+                  ? 'The application took too long to start'
+                  : isAuthError 
+                  ? 'You do not have permission to access this application'
+                  : 'An error occurred during startup'}
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Alert variant="destructive">
+          <Alert variant={isAuthError ? "destructive" : "default"}>
             <AlertDescription className="text-sm">
               {errorMessage}
             </AlertDescription>
           </Alert>
 
-          {diagnostics && (
-            <div className="rounded-lg bg-muted p-3 text-sm">
-              <p className="font-medium mb-2">Startup Diagnostics:</p>
-              <ul className="space-y-1 text-muted-foreground">
-                <li><span className="font-medium">Phase:</span> {diagnostics.phase}</li>
-                <li><span className="font-medium">Identity initializing:</span> {diagnostics.isInitializing ? 'Yes' : 'No'}</li>
-                <li><span className="font-medium">Authenticated:</span> {diagnostics.isAuthenticated ? 'Yes' : 'No'}</li>
-                <li><span className="font-medium">Profile fetched:</span> {diagnostics.isFetched ? 'Yes' : 'No'}</li>
-                <li><span className="font-medium">Profile loading:</span> {diagnostics.profileLoading ? 'Yes' : 'No'}</li>
-              </ul>
-            </div>
-          )}
-
-          <div className="text-sm text-muted-foreground">
-            <p className="mb-2">This could be due to:</p>
-            <ul className="list-disc list-inside space-y-1 ml-2">
-              <li>Network connectivity issues</li>
-              <li>Backend service temporarily unavailable</li>
-              <li>Browser cache conflicts</li>
-              <li>Service worker interference</li>
-            </ul>
-          </div>
-
-          {isWatchdogTimeout && (
+          {isAuthError && (
             <Alert>
               <AlertDescription className="text-sm">
-                <p className="font-medium mb-2">Try Service Worker Safe Mode:</p>
-                <p>
-                  If the problem persists, try opening the same URL with <code className="bg-muted px-1 py-0.5 rounded">?nosw=1</code> appended to bypass service worker caching.
-                </p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Example: <code className="bg-muted px-1 py-0.5 rounded">{window.location.href.split('?')[0]}?nosw=1</code>
-                </p>
+                This application requires admin or user privileges. Please contact the application owner if you believe you should have access.
               </AlertDescription>
             </Alert>
           )}
+
+          {isWatchdogTimeout && diagnostics && (
+            <div className="rounded-lg bg-muted p-3 text-xs space-y-1">
+              <p className="font-semibold text-muted-foreground">Diagnostic Information:</p>
+              <p><span className="font-medium">Phase:</span> {diagnostics.phase}</p>
+              <p><span className="font-medium">Authenticated:</span> {diagnostics.isAuthenticated ? 'Yes' : 'No'}</p>
+              <p><span className="font-medium">Profile Fetched:</span> {diagnostics.isFetched ? 'Yes' : 'No'}</p>
+              <p><span className="font-medium">Profile Loading:</span> {diagnostics.profileLoading ? 'Yes' : 'No'}</p>
+            </div>
+          )}
         </CardContent>
         <CardFooter className="flex flex-col gap-2">
-          <Button onClick={onRetry} className="w-full gap-2">
-            <RefreshCw className="h-4 w-4" />
-            Retry
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleResetCache}
-            className="w-full"
-          >
-            Clear All Caches & Retry
-          </Button>
+          <div className="flex w-full gap-2">
+            <Button onClick={onRetry} className="flex-1">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Retry
+            </Button>
+            <Button onClick={handleResetCache} variant="outline" className="flex-1">
+              <Trash2 className="mr-2 h-4 w-4" />
+              Clear Cache
+            </Button>
+          </div>
+          {onClearAuth && (
+            <Button 
+              onClick={handleClearAuthAndReturnToLogin} 
+              variant="secondary" 
+              className="w-full"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Clear Session & Return to Login
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </div>

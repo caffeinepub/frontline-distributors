@@ -37,6 +37,8 @@ export interface Expense {
   'amount' : bigint,
 }
 export type ExpenseId = bigint;
+export type LoginResult = { 'ok' : UserProfile } |
+  { 'errorMessage' : string };
 export interface Product {
   'id' : ProductId,
   'cost' : bigint,
@@ -53,6 +55,7 @@ export type UserRole = { 'admin' : null } |
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'changeOwnerPassword' : ActorMethod<[string, string], LoginResult>,
   'createBill' : ActorMethod<[Bill], undefined>,
   'createCustomer' : ActorMethod<[Customer], undefined>,
   'createExpense' : ActorMethod<[Expense], undefined>,
@@ -70,9 +73,14 @@ export interface _SERVICE {
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCustomer' : ActorMethod<[CustomerId], Customer>,
+  'getOwnerStatus' : ActorMethod<[], boolean>,
   'getProduct' : ActorMethod<[ProductId], Product>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'isCallerLoggedIn' : ActorMethod<[], boolean>,
+  'loginAsOwner' : ActorMethod<[string], LoginResult>,
+  'loginAsSalesman' : ActorMethod<[string], LoginResult>,
+  'logout' : ActorMethod<[], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'syncExpenses' : ActorMethod<[Array<Expense>], undefined>,
   'updateCustomer' : ActorMethod<[Customer], undefined>,
