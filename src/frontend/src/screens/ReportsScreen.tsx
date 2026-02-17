@@ -175,10 +175,10 @@ export default function ReportsScreen() {
   const dailySales = getDailySales(bills, customers);
   
   // Calculate date range summary
-  const startTime = startDate ? new Date(startDate).getTime() : 0;
-  const endTime = endDate ? new Date(endDate).getTime() + 86400000 : Date.now();
+  const startTime = startDate ? new Date(startDate) : new Date(0);
+  const endTime = endDate ? new Date(new Date(endDate).getTime() + 86400000) : new Date();
   const summary = getDateRangeSummary(bills, expenses, startTime, endTime);
-  const profitData = calculateProfit(bills, products, expenses, startTime, endTime);
+  const profitData = calculateProfit(bills, products, expenses, startTime.getTime(), endTime.getTime());
 
   const renderExpenseCard = (expense: Expense) => (
     <Card key={expense.id.toString()}>
@@ -254,7 +254,7 @@ export default function ReportsScreen() {
                 <Card>
                   <CardContent className="p-4">
                     <p className="text-sm text-muted-foreground">Total Sales</p>
-                    <p className="text-xl sm:text-2xl font-bold">₹{summary.totalSales.toLocaleString()}</p>
+                    <p className="text-xl sm:text-2xl font-bold">₹{summary.totalRevenue.toLocaleString()}</p>
                   </CardContent>
                 </Card>
                 <Card>
@@ -467,12 +467,8 @@ export default function ReportsScreen() {
                     </Table>
                   </div>
 
-                  <div className="md:hidden">
-                    <ResponsiveTableCards
-                      data={expenses}
-                      renderCard={renderExpenseCard}
-                      emptyMessage="No expenses recorded yet"
-                    />
+                  <div className="md:hidden space-y-3">
+                    {expenses.map(renderExpenseCard)}
                   </div>
                 </>
               )}

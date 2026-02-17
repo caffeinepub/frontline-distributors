@@ -1,222 +1,40 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 21,
+  "projectStateVersion": 3,
   "summary": "New project",
   "architectural_notes": [],
   "known_issues": [
-    "Owner login still fails with error: \"Unauthorized: Only admins can assign user roles\" (salesman login works).",
-    "Login option is currently not functioning (login action/button not working); previously after a similar issue was cleared, Owner login still failed while Salesman login worked.",
-    "Login role selector is not selectable and login is not functioning (user reports login UI not selectable/working).",
-    "After deploying Version 36, user reports the login screen is still not accessible (login UI remains unusable/unreachable)."
+    "App shows 'unable to connect to server' when attempting to log in (Owner/Salesman)."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-frontend-when-the-backend-returns-an-owner-login-error-the-ui-must-continue-to-display-a-clear-english-error-message-via-the-existing-toast-normalizeautherror-without-exposing-raw-reject-technical-prefixes-no-ui-flow-should-get-stuck-in-a-loading-state-due-to-owner-login-failure",
-      "title": "Frontend: When the backend returns an owner-login error, the UI must continue to display a clear English error message (via the existing toast + `normalizeAuthError`) without exposing raw reject/technical prefixes; no UI flow should get stuck in a loading state due to owner login failure.",
+      "id": "feature-add-actionable-diagnostics-to-the-login-startup-flow-so-that-when-the-app-shows-unable-to-connect-to-server-the-ui-also-displays-the-underlying-actor-agent-initialization-error-if-any-and-provides-retry-actions",
+      "title": "Add actionable diagnostics to the login/startup flow so that when the app shows “Unable to connect to server”, the UI also displays the underlying actor/agent initialization error (if any) and provides retry actions.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-actor-initialization-hook-to-surface-failures-error-status-to-the-rest-of-the-app-instead-of-returning-only-a-null-actor-and-causing-downstream-code-to-emit-a-generic-connection-error",
+      "title": "Update the actor initialization hook to surface failures (error + status) to the rest of the app, instead of returning only a null actor and causing downstream code to emit a generic connection error.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-actor-initialization-resilient-to-missing-empty-admin-secret-parameter-so-that-the-anonymous-actor-can-still-be-created-and-used-for-password-login-without-failing-due-to-secret-based-access-control-initialization",
+      "title": "Make actor initialization resilient to missing/empty admin secret parameter so that the anonymous actor can still be created and used for password login without failing due to secret-based access-control initialization.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
-    },
-    {
-      "id": "feature-fix-the-login-screen-so-the-user-can-always-a-change-select-the-login-as-role-between-owner-and-salesman-and-b-type-in-the-password-field-for-either-role-only-the-actual-login-submission-must-be-disabled-while-the-backend-actor-is-still-connecting-initializing-or-while-a-login-attempt-is-in-progress",
-      "title": "Fix the Login screen so the user can always (a) change/select the \"Login As\" role between Owner and Salesman and (b) type in the Password field for either role; only the actual login submission must be disabled while the backend actor is still connecting/initializing or while a login attempt is in progress.",
-      "reqIds": [
-        "REQ-8"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-fix-the-login-screen-regression-so-the-login-as-role-selector-owner-salesman-is-always-selectable-and-the-password-field-is-always-editable-when-the-user-is-on-the-login-form-only-the-login-button-may-be-disabled-while-the-backend-actor-is-still-connecting-initializing-or-while-a-login-attempt-is-in-progress",
-      "title": "Fix the Login screen regression so the \"Login As\" role selector (Owner/Salesman) is always selectable and the Password field is always editable when the user is on the login form; only the Login button may be disabled while the backend actor is still connecting/initializing or while a login attempt is in progress.",
-      "reqIds": [
-        "REQ-9"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-the-frontend-never-gets-stuck-in-a-disabled-blocked-login-state-due-to-actor-initialization-timing-login-mutations-must-not-permanently-block-interaction-if-the-actor-is-not-ready-and-all-user-facing-errors-must-be-displayed-in-clear-english-via-the-existing-toast-normalizeautherror-flow-no-raw-reject-technical-prefixes",
-      "title": "Ensure the frontend never gets stuck in a disabled/blocked login state due to actor initialization timing: login mutations must not permanently block interaction if the actor is not ready, and all user-facing errors must be displayed in clear English via the existing toast + normalizeAuthError flow (no raw reject/technical prefixes).",
-      "reqIds": [
-        "REQ-10"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-fix-the-login-screen-so-the-login-action-always-works-end-to-end-when-the-user-selects-owner-or-salesman-enters-a-password-and-presses-the-login-button-or-enter-the-app-must-either-successfully-log-in-and-proceed-or-show-a-clear-english-error-toast-and-re-enable-the-login-button-no-silent-no-op-behavior",
-      "title": "Fix the Login screen so the login action always works end-to-end: when the user selects Owner or Salesman, enters a password, and presses the Login button (or Enter), the app must either successfully log in and proceed, or show a clear English error toast and re-enable the Login button (no silent no-op behavior).",
-      "reqIds": [
-        "REQ-16"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-clear-recovery-path-on-the-login-screen-for-cases-where-the-backend-actor-never-becomes-ready-connecting-to-server-so-users-can-restore-login-functionality-without-guessing-provide-a-visible-action-to-retry-initialization-and-a-visible-action-to-clear-caches-reset-the-app-both-actions-must-keep-all-user-facing-text-in-english",
-      "title": "Add a clear recovery path on the Login screen for cases where the backend actor never becomes ready (\"Connecting to server...\") so users can restore login functionality without guessing: provide a visible action to retry initialization and a visible action to clear caches/reset the app (both actions must keep all user-facing text in English).",
-      "reqIds": [
-        "REQ-17"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-the-application-always-allows-the-user-to-reach-and-use-the-login-screen-even-if-a-previous-session-left-isauthenticated-true-in-localstorage-and-the-backend-actor-user-profile-cannot-be-fetched-e-g-actor-initialization-stalls-or-fails-the-app-must-not-remain-indefinitely-on-the-full-screen-loading-state-in-a-way-that-prevents-login-interaction",
-      "title": "Ensure the application always allows the user to reach and use the Login screen, even if a previous session left `isAuthenticated=true` in localStorage and the backend actor/user profile cannot be fetched (e.g., actor initialization stalls or fails). The app must not remain indefinitely on the full-screen \"Loading...\" state in a way that prevents login interaction.",
-      "reqIds": [
-        "REQ-22"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-clear-recovery-action-whenever-startup-profile-loading-fails-or-stalls-that-lets-the-user-return-to-login-by-clearing-password-auth-state-logout-clearauth-without-requiring-manual-cache-clearing-this-recovery-action-must-be-visible-on-the-relevant-error-timeout-ui-and-must-not-rely-only-on-a-full-page-reload",
-      "title": "Add a clear recovery action whenever startup/profile loading fails or stalls that lets the user return to Login by clearing password-auth state (logout/clearAuth) without requiring manual cache clearing. This recovery action must be visible on the relevant error/timeout UI and must not rely only on a full page reload.",
-      "reqIds": [
-        "REQ-23"
-      ],
-      "version": 1
     }
   ],
-  "new_feature_requests": [
-    {
-      "id": "AR-3",
-      "summary": "Fix owner login flow so it does not fail with \"Owner status not found for principal\" after logging in as owner; ensure the owner principal has the required OwnerStatus record/initialization during auth bootstrap.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Update the backend owner authentication bootstrap so that `loginAsOwner` and `changeOwnerPassword` never fail with the error text \"Owner status not found for principal\" for a non-anonymous caller. If the caller has no `OwnerStatus` record yet, the backend must create/initialize one automatically (using the existing default owner password) before validating the password attempt.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Ensure that after a successful `loginAsOwner` (and after a successful `changeOwnerPassword`), the caller is immediately authorized for endpoints guarded by both `requireUser` and `requireAdmin` (i.e., the owner principal receives the necessary authorization/roles in `accessControlState` during the same login flow).",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Fix owner login flow error \"Unauthorized: Only admins can assign user roles\" by adjusting backend role/authorization bootstrap so the owner principal can be granted required roles/permissions during login without failing authorization checks (salesman login unaffected).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-7",
-      "summary": "Fix the backend owner-login and owner-password-change flows so that a successful owner authentication can bootstrap the caller into the required AccessControl roles without failing with the error text \"Unauthorized: Only admins can assign user roles\".",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-8",
-      "summary": "Ensure the backend does not rely on the caller already being an admin in order to assign the initial owner roles during owner authentication bootstrap; the role/permission assignment must be performed in a way that is allowed during the owner bootstrap path.",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-9",
-      "summary": "Fix backend owner authentication bootstrap so that logging in as owner does not fail with the error text \"Unauthorized: Only admins can assign user roles\" and the owner principal is granted the necessary roles/permissions during the same `loginAsOwner` / `changeOwnerPassword` flow without requiring the caller to already be an admin.",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-10",
-      "summary": "Ensure the salesman login flow remains unchanged and continues to enforce its current authorization behavior; the fix for owner bootstrap must not allow non-admin salesmen to self-assign roles or bypass the \"Only admins can assign user roles\" restriction.",
-      "reqIds": [
-        "REQ-7"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-11",
-      "summary": "Fix login UI so users can change/select the \"Login as\" role (Owner/Salesman) and can type a password in both modes; ensure inputs are enabled and not blocked by loading/disabled state.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-14",
-      "summary": "Fix backend owner authentication bootstrap so that after a successful loginAsOwner and after a successful changeOwnerPassword, the caller is immediately authorized for endpoints guarded by requireUser and requireAdmin in the same session (no follow-up calls or manual admin setup required).",
-      "reqIds": [
-        "REQ-11"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-15",
-      "summary": "Eliminate owner-login bootstrap failures related to role assignment so owner login never fails with \"Unauthorized: Only admins can assign user roles\" and never fails with \"Owner status not found for principal\" for any non-anonymous caller; salesman login behavior must remain unchanged and must not allow non-admin salesmen to self-assign roles.",
-      "reqIds": [
-        "REQ-12"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-16",
-      "summary": "Fix the backend owner authentication bootstrap so that logging in as Owner never fails with the error message \"Unauthorized: Only admins can assign user roles\".",
-      "reqIds": [
-        "REQ-13"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-17",
-      "summary": "Ensure that after a successful Owner login (and after a successful Owner password change), the caller is immediately authorized for endpoints guarded by both user and admin authorization checks in the same session.",
-      "reqIds": [
-        "REQ-14"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-18",
-      "summary": "Keep the Salesman login flow behavior unchanged and do not allow non-admin Salesman users to self-assign roles or bypass the existing restriction that only admins can assign user roles.",
-      "reqIds": [
-        "REQ-15"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-21",
-      "summary": "Fix backend Owner authentication bootstrap so Owner login does not fail and the Owner principal is fully authorized in the same session: after a successful loginAsOwner or changeOwnerPassword, the caller must immediately pass both requireUser and requireAdmin guards, without throwing authorization errors during bootstrap.",
-      "reqIds": [
-        "REQ-18"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-22",
-      "summary": "Ensure the Salesman login behavior remains unchanged and does not gain any ability to self-assign admin/user roles beyond current rules while fixing Owner bootstrap.",
-      "reqIds": [
-        "REQ-19"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-23",
-      "summary": "Fix the Login screen so the user can always interact with the \"Login As\" role selector (Owner/Salesman) and the Password input while on the login form; only the Login button submission must be disabled during backend actor initialization/connection and during an active login attempt. Ensure there is no UI overlay/state that blocks selecting the role or typing the password.",
-      "reqIds": [
-        "REQ-20"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-24",
-      "summary": "Fix the login action so it always performs a single, reliable end-to-end attempt: when the user presses the Login button (or presses Enter in the password field), the app must either successfully log in and proceed, or display a clear English error toast and fully re-enable login interaction (no silent no-op and no permanently stuck disabled state).",
-      "reqIds": [
-        "REQ-21"
-      ],
-      "status": "pending"
-    }
-  ],
-  "projectName": "Fix owner login authorization error during role bootstrap",
+  "new_feature_requests": [],
+  "projectName": "Frontline Distributors",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -1,55 +1,73 @@
 {
   "kind": "build_request",
-  "title": "Fix app startup so the Login screen is always reachable and not blocked by loading/profile gating",
+  "title": "Fix 'Unable to connect to server' during Owner/Salesman login",
+  "projectName": "Frontline Distributors",
   "priority": "high",
   "requirements": [
     {
-      "id": "REQ-22",
-      "text": "Ensure the application always allows the user to reach and use the Login screen, even if a previous session left `isAuthenticated=true` in localStorage and the backend actor/user profile cannot be fetched (e.g., actor initialization stalls or fails). The app must not remain indefinitely on the full-screen \"Loading...\" state in a way that prevents login interaction.",
+      "id": "REQ-1",
+      "text": "Add actionable diagnostics to the login/startup flow so that when the app shows “Unable to connect to server”, the UI also displays the underlying actor/agent initialization error (if any) and provides retry actions.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-3"
         ],
         "quotes": [
-          "login is still not accessable"
+          "its showing unable to connect to server"
         ]
       },
       "acceptanceCriteria": [
-        "If the backend actor is unavailable (null) or still initializing, the user can still see a usable Login screen UI (role selector and password input remain interactive; only the Login button may be disabled when appropriate).",
-        "If a stored password-auth session causes the app to attempt profile fetch but the profile query cannot run because the actor is not ready, the app must not lock the user into the global loading screen; it must offer a clear path back to login.",
-        "All user-facing messages involved in this flow are in English."
+        "When actor creation fails, the user sees a clear error state that includes the normalized error message and an expandable “Technical Details” section (similar to AppStartupError) rather than only a generic “Unable to connect to server”.",
+        "The error state provides working actions to Retry (re-attempt actor initialization) and Clear Cache (calls the existing resetCachedApp()).",
+        "The login screen no longer stays indefinitely in “Connecting to server...” without a visible error when the actor query fails."
       ]
     },
     {
-      "id": "REQ-23",
-      "text": "Add a clear recovery action whenever startup/profile loading fails or stalls that lets the user return to Login by clearing password-auth state (logout/clearAuth) without requiring manual cache clearing. This recovery action must be visible on the relevant error/timeout UI and must not rely only on a full page reload.",
+      "id": "REQ-2",
+      "text": "Update the actor initialization hook to surface failures (error + status) to the rest of the app, instead of returning only a null actor and causing downstream code to emit a generic connection error.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-3"
         ],
         "quotes": [
-          "login is still not accessable"
+          "its showing unable to connect to server"
         ]
       },
       "acceptanceCriteria": [
-        "When the startup watchdog timeout screen is shown, there is a visible action (button) that clears the password-auth session and returns the UI to the Login screen.",
-        "When the app shows a profile fetch error state (the existing AppStartupError path), the user can choose an option that clears the password-auth session and returns to the Login screen.",
-        "Using the recovery action does not leave the app stuck in a loading/disabled state; login inputs remain usable immediately after returning to the Login screen.",
-        "All user-facing button labels and help text added/changed are in English."
+        "useActor returns enough state to distinguish: (a) still initializing, (b) initialized successfully, (c) failed with error.",
+        "LoginScreen can render different messaging for “connecting” vs “failed to connect”, based on the hook’s state, without relying on thrown 'Unable to connect to server' from mutations.",
+        "If actor initialization fails, the captured error is logged to console and is available for display in the UI diagnostics view."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Make actor initialization resilient to missing/empty admin secret parameter so that the anonymous actor can still be created and used for password login without failing due to secret-based access-control initialization.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "its showing unable to connect to server"
+        ]
+      },
+      "acceptanceCriteria": [
+        "If the URL parameter `caffeineAdminToken` is absent or empty, the app does not fail actor initialization solely because of secret initialization; the app continues to load and allows password login attempts.",
+        "If secret initialization fails for any reason, the app still provides a clear error with diagnostics instead of silently leaving the actor null.",
+        "Owner and Salesman login mutations no longer fail with 'Unable to connect to server' when the only issue is missing admin token in the URL."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/hooks/useInternetIdentity.ts or frontend/src/hooks/useInternetIdentity.tsx (immutable).",
-    "Do not edit frontend/src/hooks/useActor.ts (immutable). Compose behavior by changing non-immutable components/screens (e.g., App.tsx, screens, and components).",
-    "Keep user-facing error normalization behavior consistent with existing toast + normalizeAuthError patterns; do not expose raw technical reject prefixes."
+    "Do not edit immutable frontend paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui (compose existing UI components instead).",
+    "Backend must remain a single Motoko actor in backend/main.mo; introduce migration.mo only if persistent state schema changes are required.",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Do not change the Salesman vs Owner authentication rules or backend authorization behavior as part of this request.",
-    "Do not add new authentication providers or third-party login integrations.",
-    "Do not redesign non-login screens (Dashboard/Products/Billing/etc.) beyond what is necessary to prevent login inaccessibility."
+    "Adding new authentication providers (only the existing password-based flow and existing Internet Identity support remain).",
+    "Introducing external databases, third-party services, or websocket-based realtime connectivity.",
+    "Changing the Owner/Salesman password values."
   ],
   "imageRequirements": {
     "required": [],

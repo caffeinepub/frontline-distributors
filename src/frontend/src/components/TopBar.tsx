@@ -11,7 +11,7 @@ interface TopBarProps {
 }
 
 export default function TopBar({ onMenuClick }: TopBarProps) {
-  const { logout } = usePasswordAuth();
+  const { logout, isAuthenticated } = usePasswordAuth();
   const { data: userProfile } = useGetCallerUserProfile();
   const queryClient = useQueryClient();
   const [showProfile, setShowProfile] = useState(false);
@@ -46,44 +46,58 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
           <SyncIndicator />
         </div>
 
-        {/* User profile - collapsible on mobile */}
-        {userProfile && (
+        {/* User profile or logout button - always visible when authenticated */}
+        {isAuthenticated && (
           <div className="relative flex-shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-1 sm:gap-2 px-2 sm:px-3"
-              onClick={() => setShowProfile(!showProfile)}
-            >
-              <User className="h-4 w-4" />
-              <span className="hidden sm:inline max-w-[120px] truncate">
-                {userProfile.name}
-              </span>
-              <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
-            </Button>
-
-            {showProfile && (
+            {userProfile ? (
               <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setShowProfile(false)}
-                />
-                <div className="absolute right-0 top-full mt-2 w-48 rounded-md border bg-popover p-2 shadow-lg z-50">
-                  <div className="px-3 py-2 border-b mb-2">
-                    <p className="font-medium text-sm">{userProfile.name}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{userProfile.role}</p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start gap-2"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Logout
-                  </Button>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1 sm:gap-2 px-2 sm:px-3"
+                  onClick={() => setShowProfile(!showProfile)}
+                >
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:inline max-w-[120px] truncate">
+                    {userProfile.name}
+                  </span>
+                  <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Button>
+
+                {showProfile && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowProfile(false)}
+                    />
+                    <div className="absolute right-0 top-full mt-2 w-48 rounded-md border bg-popover p-2 shadow-lg z-50">
+                      <div className="px-3 py-2 border-b mb-2">
+                        <p className="font-medium text-sm">{userProfile.name}</p>
+                        <p className="text-xs text-muted-foreground capitalize">{userProfile.role}</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-start gap-2"
+                        onClick={handleLogout}
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Logout
+                      </Button>
+                    </div>
+                  </>
+                )}
               </>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="hidden sm:inline">Return to Login</span>
+              </Button>
             )}
           </div>
         )}

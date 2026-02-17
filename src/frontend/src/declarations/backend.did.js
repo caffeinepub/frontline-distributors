@@ -13,39 +13,6 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
-export const UserProfile = IDL.Record({ 'name' : IDL.Text, 'role' : IDL.Text });
-export const LoginResult = IDL.Variant({
-  'ok' : UserProfile,
-  'errorMessage' : IDL.Text,
-});
-export const BillId = IDL.Nat;
-export const CustomerId = IDL.Nat;
-export const ProductId = IDL.Nat;
-export const Product = IDL.Record({
-  'id' : ProductId,
-  'cost' : IDL.Nat,
-  'name' : IDL.Text,
-  'price' : IDL.Nat,
-  'availableInventory' : IDL.Nat,
-  'piecesPerCase' : IDL.Nat,
-});
-export const Bill = IDL.Record({
-  'id' : BillId,
-  'gstApplied' : IDL.Bool,
-  'creditAmount' : IDL.Nat,
-  'gstAmount' : IDL.Nat,
-  'timestamp' : IDL.Int,
-  'discount' : IDL.Nat,
-  'customerId' : CustomerId,
-  'gstRate' : IDL.Nat,
-  'products' : IDL.Vec(Product),
-});
-export const Customer = IDL.Record({
-  'id' : CustomerId,
-  'name' : IDL.Text,
-  'address' : IDL.Text,
-  'phoneNumber' : IDL.Text,
-});
 export const ExpenseId = IDL.Nat;
 export const Expense = IDL.Record({
   'id' : ExpenseId,
@@ -54,44 +21,31 @@ export const Expense = IDL.Record({
   'category' : IDL.Text,
   'amount' : IDL.Nat,
 });
+export const UserProfile = IDL.Record({ 'name' : IDL.Text, 'role' : IDL.Text });
+export const LoginResult = IDL.Variant({
+  'ok' : UserProfile,
+  'errorMessage' : IDL.Text,
+});
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-  'changeOwnerPassword' : IDL.Func([IDL.Text, IDL.Text], [LoginResult], []),
-  'createBill' : IDL.Func([Bill], [], []),
-  'createCustomer' : IDL.Func([Customer], [], []),
   'createExpense' : IDL.Func([Expense], [], []),
   'createExpenses' : IDL.Func([IDL.Vec(Expense)], [], []),
-  'createProduct' : IDL.Func([Product], [], []),
-  'deleteBill' : IDL.Func([BillId], [], []),
-  'deleteCustomer' : IDL.Func([CustomerId], [], []),
   'deleteExpense' : IDL.Func([ExpenseId], [], []),
-  'deleteProduct' : IDL.Func([ProductId], [], []),
-  'getAllBills' : IDL.Func([], [IDL.Vec(Bill)], ['query']),
-  'getAllCustomers' : IDL.Func([], [IDL.Vec(Customer)], ['query']),
   'getAllExpenses' : IDL.Func([], [IDL.Vec(Expense)], ['query']),
-  'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
-  'getBill' : IDL.Func([BillId], [Bill], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-  'getCustomer' : IDL.Func([CustomerId], [Customer], ['query']),
-  'getOwnerStatus' : IDL.Func([], [IDL.Bool], ['query']),
-  'getProduct' : IDL.Func([ProductId], [Product], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-  'isCallerLoggedIn' : IDL.Func([], [IDL.Bool], ['query']),
-  'loginAsOwner' : IDL.Func([IDL.Text], [LoginResult], []),
-  'loginAsSalesman' : IDL.Func([IDL.Text], [LoginResult], []),
-  'logout' : IDL.Func([], [], []),
+  'loginAsOwner' : IDL.Func([IDL.Text, IDL.Text], [LoginResult], []),
+  'loginAsSalesman' : IDL.Func([IDL.Text, IDL.Text], [LoginResult], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'syncExpenses' : IDL.Func([IDL.Vec(Expense)], [], []),
-  'updateCustomer' : IDL.Func([Customer], [], []),
-  'updateProduct' : IDL.Func([Product], [], []),
 });
 
 export const idlInitArgs = [];
@@ -102,39 +56,6 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
-  const UserProfile = IDL.Record({ 'name' : IDL.Text, 'role' : IDL.Text });
-  const LoginResult = IDL.Variant({
-    'ok' : UserProfile,
-    'errorMessage' : IDL.Text,
-  });
-  const BillId = IDL.Nat;
-  const CustomerId = IDL.Nat;
-  const ProductId = IDL.Nat;
-  const Product = IDL.Record({
-    'id' : ProductId,
-    'cost' : IDL.Nat,
-    'name' : IDL.Text,
-    'price' : IDL.Nat,
-    'availableInventory' : IDL.Nat,
-    'piecesPerCase' : IDL.Nat,
-  });
-  const Bill = IDL.Record({
-    'id' : BillId,
-    'gstApplied' : IDL.Bool,
-    'creditAmount' : IDL.Nat,
-    'gstAmount' : IDL.Nat,
-    'timestamp' : IDL.Int,
-    'discount' : IDL.Nat,
-    'customerId' : CustomerId,
-    'gstRate' : IDL.Nat,
-    'products' : IDL.Vec(Product),
-  });
-  const Customer = IDL.Record({
-    'id' : CustomerId,
-    'name' : IDL.Text,
-    'address' : IDL.Text,
-    'phoneNumber' : IDL.Text,
-  });
   const ExpenseId = IDL.Nat;
   const Expense = IDL.Record({
     'id' : ExpenseId,
@@ -143,44 +64,31 @@ export const idlFactory = ({ IDL }) => {
     'category' : IDL.Text,
     'amount' : IDL.Nat,
   });
+  const UserProfile = IDL.Record({ 'name' : IDL.Text, 'role' : IDL.Text });
+  const LoginResult = IDL.Variant({
+    'ok' : UserProfile,
+    'errorMessage' : IDL.Text,
+  });
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-    'changeOwnerPassword' : IDL.Func([IDL.Text, IDL.Text], [LoginResult], []),
-    'createBill' : IDL.Func([Bill], [], []),
-    'createCustomer' : IDL.Func([Customer], [], []),
     'createExpense' : IDL.Func([Expense], [], []),
     'createExpenses' : IDL.Func([IDL.Vec(Expense)], [], []),
-    'createProduct' : IDL.Func([Product], [], []),
-    'deleteBill' : IDL.Func([BillId], [], []),
-    'deleteCustomer' : IDL.Func([CustomerId], [], []),
     'deleteExpense' : IDL.Func([ExpenseId], [], []),
-    'deleteProduct' : IDL.Func([ProductId], [], []),
-    'getAllBills' : IDL.Func([], [IDL.Vec(Bill)], ['query']),
-    'getAllCustomers' : IDL.Func([], [IDL.Vec(Customer)], ['query']),
     'getAllExpenses' : IDL.Func([], [IDL.Vec(Expense)], ['query']),
-    'getAllProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
-    'getBill' : IDL.Func([BillId], [Bill], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-    'getCustomer' : IDL.Func([CustomerId], [Customer], ['query']),
-    'getOwnerStatus' : IDL.Func([], [IDL.Bool], ['query']),
-    'getProduct' : IDL.Func([ProductId], [Product], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-    'isCallerLoggedIn' : IDL.Func([], [IDL.Bool], ['query']),
-    'loginAsOwner' : IDL.Func([IDL.Text], [LoginResult], []),
-    'loginAsSalesman' : IDL.Func([IDL.Text], [LoginResult], []),
-    'logout' : IDL.Func([], [], []),
+    'loginAsOwner' : IDL.Func([IDL.Text, IDL.Text], [LoginResult], []),
+    'loginAsSalesman' : IDL.Func([IDL.Text, IDL.Text], [LoginResult], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'syncExpenses' : IDL.Func([IDL.Vec(Expense)], [], []),
-    'updateCustomer' : IDL.Func([Customer], [], []),
-    'updateProduct' : IDL.Func([Product], [], []),
   });
 };
 

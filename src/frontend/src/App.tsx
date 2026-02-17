@@ -123,7 +123,7 @@ function AppInner() {
           error={new Error('Application startup timeout')}
           onRetry={() => window.location.reload()}
           onClearAuth={handleClearAuthAndReturnToLogin}
-          diagnostics={capturedDiagnostics}
+          diagnostics={capturedDiagnostics || undefined}
           isWatchdogTimeout={true}
         />
         <Toaster />
@@ -161,7 +161,10 @@ function AppInner() {
   if (!isAuthenticated || showProfileSetup) {
     return (
       <>
-        <LoginScreen showProfileSetup={showProfileSetup} />
+        <LoginScreen 
+          showProfileSetup={showProfileSetup}
+          onReturnToLogin={handleClearAuthAndReturnToLogin}
+        />
         <Toaster />
       </>
     );

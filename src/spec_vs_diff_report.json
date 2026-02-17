@@ -1,44 +1,52 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-16T12:57:26.512Z",
-  "summary": "Diff adds startup recovery hooks and adjusts login behavior so the role selector/password remain interactive while the backend actor initializes, and introduces explicit clear-auth callbacks in the startup error UI. It also adds unrelated deployment/build cache-reset logic and other recovery utilities (cache reset, reload) that were not requested.",
-  "missing_requirements": [],
-  "hallucinated_features": [
+  "generatedAt": "2026-02-17T08:57:49.871Z",
+  "summary": "The diff adds a new `useActorStatus` wrapper hook and updates the LoginScreen/AppStartupError to show richer connection errors with retry/clear-cache actions. However, it does not demonstrate changes to the underlying actor initialization itself (i.e., `useActor`) or any resilience changes related to missing/empty `caffeineAdminToken` affecting actor creation.",
+  "missing_requirements": [
     {
-      "description": "Build/deployment version check with automatic cache reset/reload behavior (BUILD_ID tracking, reset-in-progress flag) added to startup.",
-      "reason": "BuildRequest focuses on ensuring Login is reachable and adding a clear-auth recovery action; it does not request build-version detection or automatic cache resets on new deployments.",
+      "id": "REQ-2",
+      "requirement": "Update the actor initialization hook to surface failures (error + status) to the rest of the app, instead of returning only a null actor and causing downstream code to emit a generic connection error.",
+      "reason": "The diff introduces a new wrapper hook (`useActorStatus`) that infers status/error via React Query cache state, but there is no evidence that the underlying actor initialization hook (`useActor`) itself was updated to return explicit (initializing/success/error) state as required.",
       "evidence": [
-        "frontend/src/App.tsx (BUILD_ID_KEY/BUILD_RESET_FLAG logic, resetCachedApp usage)"
+        "frontend/src/hooks/useActorStatus.ts (new wrapper around useActor)",
+        "frontend/src/hooks/useQueries.ts (uses useActorStatus, not an updated useActor)"
       ]
     },
     {
-      "description": "Cache-reset recovery path added to startup error UI.",
-      "reason": "REQ-23 asks for a recovery action that clears password-auth state and returns to Login without relying only on reload; it does not request clearing caches/resetting the app cache as part of the recovery UI.",
+      "id": "REQ-3",
+      "requirement": "Make actor initialization resilient to missing/empty admin secret parameter so that the anonymous actor can still be created and used for password login without failing due to secret-based access-control initialization.",
+      "reason": "The changes only read `caffeineAdminToken` for diagnostics (`hasAdminToken`) and add messaging/actions, but there is no evidence that actor/agent initialization behavior was changed to avoid failing when the token is absent/empty, nor any try/catch/guard around secret initialization affecting actor creation.",
       "evidence": [
-        "frontend/src/components/AppStartupError.tsx (imports resetCachedApp; handleResetCache)"
-      ]
-    },
-    {
-      "description": "Login screen adds non-requested recovery actions such as retrying connection via full page reload and clearing caches/reloading.",
-      "reason": "BuildRequest explicitly prefers recovery that does not rely only on a full page reload; adding reload/cache-clear actions is beyond the requested clear-auth-to-login recovery.",
-      "evidence": [
-        "frontend/src/screens/LoginScreen.tsx (handleRetryConnection uses window.location.reload; imports resetCachedApp; handleClearCachesAndReload)"
-      ]
-    },
-    {
-      "description": "Startup error UI shows extra watchdog diagnostic information (phase/auth/profile flags).",
-      "reason": "Not requested by REQ-22/REQ-23; they only require a clear path back to Login and avoiding blocking loading states.",
-      "evidence": [
-        "frontend/src/components/AppStartupError.tsx (renders Diagnostic Information block when isWatchdogTimeout && diagnostics)"
+        "frontend/src/hooks/useActorStatus.ts (reads token via getSecretParameter for diagnostics only)",
+        "frontend/src/hooks/useQueries.ts (still blocks when actor is null; does not show actor init resilience changes)"
       ]
     }
   ],
-  "confidence": 0.64,
+  "hallucinated_features": [
+    {
+      "description": "Offline queue execution/typing changes (execute returning Promise<any>, queueing behavior updates).",
+      "reason": "Not requested by the BuildRequest, which is focused on login/actor connectivity diagnostics and admin-token resilience.",
+      "evidence": [
+        "frontend/src/offline/useOfflineQueue.ts",
+        "frontend-file-summaries.txt (offline queue/sync related summaries)"
+      ]
+    },
+    {
+      "description": "Broad UI/layout/navigation updates (TopBar/SideNav/AppLayout) and multiple business screens (Dashboard, Products, Customers, Billing, Credits) plus sync indicator UI work.",
+      "reason": "Not requested; the BuildRequest is narrowly scoped to fixing 'Unable to connect to server' during Owner/Salesman login by improving actor initialization error surfacing and diagnostics.",
+      "evidence": [
+        "frontend-file-summaries.txt (AppLayout.tsx, TopBar.tsx, SideNav.tsx, SyncIndicator.tsx, DashboardScreen.tsx, ProductsScreen.tsx, CustomersScreen.tsx, BillingScreen.tsx, CreditsScreen.tsx, dialogs, etc.)"
+      ]
+    }
+  ],
+  "confidence": 0.67,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
     "frontend/src/components/AppStartupError.tsx",
+    "frontend/src/hooks/useActorStatus.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/offline/useOfflineQueue.ts",
     "frontend/src/screens/LoginScreen.tsx",
     "project_state.json"
   ]

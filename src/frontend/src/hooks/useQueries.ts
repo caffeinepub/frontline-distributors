@@ -1,40 +1,55 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useActor } from './useActor';
+import { useActorStatus } from './useActorStatus';
 import { usePasswordAuth } from '../auth/passwordAuth';
-import type { Product, Customer, Bill, UserProfile, Expense, LoginResult } from '../backend';
+import type { UserProfile, Expense, LoginResult } from '../backend';
+import type { Product, Customer, Bill } from '../types/local';
 
 // ============================================================================
 // Authentication Queries
 // ============================================================================
 
 export function useLoginAsOwner() {
-  const { actor } = useActor();
+  const { actor, status } = useActorStatus();
 
   return useMutation({
     mutationFn: async (password: string): Promise<LoginResult> => {
       if (!actor) {
+        if (status === 'initializing') {
+          throw new Error('Still connecting to server. Please wait a moment and try again.');
+        } else if (status === 'error') {
+          throw new Error('Unable to connect to server. Please use the "Retry Connection" button to fix the connection issue first.');
+        }
         throw new Error('Unable to connect to server. Please wait and try again.');
       }
-      return actor.loginAsOwner(password);
+      // Call the real backend login method with username placeholder and password
+      const result = await actor.loginAsOwner('owner', password);
+      return result;
     },
   });
 }
 
 export function useLoginAsSalesman() {
-  const { actor } = useActor();
+  const { actor, status } = useActorStatus();
 
   return useMutation({
     mutationFn: async (password: string): Promise<LoginResult> => {
       if (!actor) {
+        if (status === 'initializing') {
+          throw new Error('Still connecting to server. Please wait a moment and try again.');
+        } else if (status === 'error') {
+          throw new Error('Unable to connect to server. Please use the "Retry Connection" button to fix the connection issue first.');
+        }
         throw new Error('Unable to connect to server. Please wait and try again.');
       }
-      return actor.loginAsSalesman(password);
+      // Call the real backend login method with username placeholder and password
+      const result = await actor.loginAsSalesman('salesman', password);
+      return result;
     },
   });
 }
 
 export function useGetCallerRole() {
-  const { actor, isFetching: actorFetching } = useActor();
+  const { actor, status } = useActorStatus();
   const { isAuthenticated } = usePasswordAuth();
 
   return useQuery({
@@ -43,7 +58,7 @@ export function useGetCallerRole() {
       if (!actor) throw new Error('Actor not available');
       return actor.isCallerAdmin();
     },
-    enabled: !!actor && !actorFetching && isAuthenticated,
+    enabled: !!actor && status === 'ready' && isAuthenticated,
     retry: false,
   });
 }
@@ -53,7 +68,7 @@ export function useGetCallerRole() {
 // ============================================================================
 
 export function useGetCallerUserProfile() {
-  const { actor, isFetching: actorFetching } = useActor();
+  const { actor, status } = useActorStatus();
   const { isAuthenticated } = usePasswordAuth();
 
   const query = useQuery<UserProfile | null>({
@@ -62,26 +77,29 @@ export function useGetCallerUserProfile() {
       if (!actor) throw new Error('Actor not available');
       return actor.getCallerUserProfile();
     },
-    enabled: !!actor && !actorFetching && isAuthenticated,
+    // Enable query as soon as actor exists and user is authenticated
+    enabled: !!actor && isAuthenticated,
     retry: false,
+    // Ensure fresh data after login
+    staleTime: 0,
   });
 
   // Return custom state that properly reflects actor dependency
   return {
     ...query,
-    isLoading: actorFetching || query.isLoading,
+    isLoading: (status === 'initializing') || query.isLoading,
     isFetched: !!actor && isAuthenticated && query.isFetched,
   };
 }
 
 export function useSaveCallerUserProfile() {
-  const { actor } = useActor();
+  const { actor } = useActorStatus();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (profile: UserProfile) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.saveCallerUserProfile(profile);
+      return actor.saveCallerUserProfile(profile);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
@@ -90,31 +108,32 @@ export function useSaveCallerUserProfile() {
 }
 
 // ============================================================================
-// Product Queries
+// Local Storage Operations (Products, Customers, Bills)
 // ============================================================================
 
+// Products
 export function useGetAllProducts() {
-  const { actor, isFetching } = useActor();
-  const { isAuthenticated } = usePasswordAuth();
-
   return useQuery<Product[]>({
     queryKey: ['products'],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getAllProducts();
+    queryFn: () => {
+      const stored = localStorage.getItem('products');
+      return stored ? JSON.parse(stored) : [];
     },
-    enabled: !!actor && !isFetching && isAuthenticated,
   });
 }
 
+// Alias for backwards compatibility
+export const useGetProducts = useGetAllProducts;
+
 export function useCreateProduct() {
-  const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (product: Product) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.createProduct(product);
+      const products = JSON.parse(localStorage.getItem('products') || '[]');
+      products.push(product);
+      localStorage.setItem('products', JSON.stringify(products));
+      return product;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -123,13 +142,17 @@ export function useCreateProduct() {
 }
 
 export function useUpdateProduct() {
-  const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (product: Product) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.updateProduct(product);
+      const products: Product[] = JSON.parse(localStorage.getItem('products') || '[]');
+      const index = products.findIndex((p) => p.id === product.id);
+      if (index !== -1) {
+        products[index] = product;
+        localStorage.setItem('products', JSON.stringify(products));
+      }
+      return product;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -138,13 +161,14 @@ export function useUpdateProduct() {
 }
 
 export function useDeleteProduct() {
-  const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (productId: bigint) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.deleteProduct(productId);
+      const products: Product[] = JSON.parse(localStorage.getItem('products') || '[]');
+      const filtered = products.filter((p) => p.id !== productId);
+      localStorage.setItem('products', JSON.stringify(filtered));
+      return productId;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -152,32 +176,29 @@ export function useDeleteProduct() {
   });
 }
 
-// ============================================================================
-// Customer Queries
-// ============================================================================
-
+// Customers
 export function useGetAllCustomers() {
-  const { actor, isFetching } = useActor();
-  const { isAuthenticated } = usePasswordAuth();
-
   return useQuery<Customer[]>({
     queryKey: ['customers'],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getAllCustomers();
+    queryFn: () => {
+      const stored = localStorage.getItem('customers');
+      return stored ? JSON.parse(stored) : [];
     },
-    enabled: !!actor && !isFetching && isAuthenticated,
   });
 }
 
+// Alias for backwards compatibility
+export const useGetCustomers = useGetAllCustomers;
+
 export function useCreateCustomer() {
-  const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (customer: Customer) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.createCustomer(customer);
+      const customers = JSON.parse(localStorage.getItem('customers') || '[]');
+      customers.push(customer);
+      localStorage.setItem('customers', JSON.stringify(customers));
+      return customer;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
@@ -186,13 +207,17 @@ export function useCreateCustomer() {
 }
 
 export function useUpdateCustomer() {
-  const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (customer: Customer) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.updateCustomer(customer);
+      const customers: Customer[] = JSON.parse(localStorage.getItem('customers') || '[]');
+      const index = customers.findIndex((c) => c.id === customer.id);
+      if (index !== -1) {
+        customers[index] = customer;
+        localStorage.setItem('customers', JSON.stringify(customers));
+      }
+      return customer;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
@@ -201,13 +226,14 @@ export function useUpdateCustomer() {
 }
 
 export function useDeleteCustomer() {
-  const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (customerId: bigint) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.deleteCustomer(customerId);
+      const customers: Customer[] = JSON.parse(localStorage.getItem('customers') || '[]');
+      const filtered = customers.filter((c) => c.id !== customerId);
+      localStorage.setItem('customers', JSON.stringify(filtered));
+      return customerId;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
@@ -215,48 +241,29 @@ export function useDeleteCustomer() {
   });
 }
 
-// ============================================================================
-// Bill Queries
-// ============================================================================
-
+// Bills
 export function useGetAllBills() {
-  const { actor, isFetching } = useActor();
-  const { isAuthenticated } = usePasswordAuth();
-
   return useQuery<Bill[]>({
     queryKey: ['bills'],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getAllBills();
+    queryFn: () => {
+      const stored = localStorage.getItem('bills');
+      return stored ? JSON.parse(stored) : [];
     },
-    enabled: !!actor && !isFetching && isAuthenticated,
   });
 }
 
+// Alias for backwards compatibility
+export const useGetBills = useGetAllBills;
+
 export function useCreateBill() {
-  const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (bill: Bill) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.createBill(bill);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bills'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-    },
-  });
-}
-
-export function useDeleteBill() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (billId: bigint) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.deleteBill(billId);
+      const bills = JSON.parse(localStorage.getItem('bills') || '[]');
+      bills.push(bill);
+      localStorage.setItem('bills', JSON.stringify(bills));
+      return bill;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bills'] });
@@ -265,31 +272,35 @@ export function useDeleteBill() {
 }
 
 // ============================================================================
-// Expense Queries
+// Backend Operations (Expenses)
 // ============================================================================
 
 export function useGetAllExpenses() {
-  const { actor, isFetching } = useActor();
+  const { actor, status } = useActorStatus();
   const { isAuthenticated } = usePasswordAuth();
 
   return useQuery<Expense[]>({
     queryKey: ['expenses'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllExpenses();
+      const expenses = await actor.getAllExpenses();
+      return expenses;
     },
-    enabled: !!actor && !isFetching && isAuthenticated,
+    enabled: !!actor && status === 'ready' && isAuthenticated,
   });
 }
 
+// Alias for backwards compatibility
+export const useGetExpenses = useGetAllExpenses;
+
 export function useCreateExpense() {
-  const { actor } = useActor();
+  const { actor } = useActorStatus();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (expense: Expense) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.createExpense(expense);
+      return actor.createExpense(expense);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
@@ -298,13 +309,13 @@ export function useCreateExpense() {
 }
 
 export function useDeleteExpense() {
-  const { actor } = useActor();
+  const { actor } = useActorStatus();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (expenseId: bigint) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.deleteExpense(expenseId);
+      return actor.deleteExpense(expenseId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
@@ -313,13 +324,13 @@ export function useDeleteExpense() {
 }
 
 export function useSyncExpenses() {
-  const { actor } = useActor();
+  const { actor } = useActorStatus();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (expenses: Expense[]) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.syncExpenses(expenses);
+      return actor.syncExpenses(expenses);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });

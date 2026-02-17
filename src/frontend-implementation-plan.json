@@ -1,53 +1,78 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Unblock Login during stalled startup/profile gating and add recovery actions",
+  "title": "Add actor init diagnostics + resilient login connection handling",
   "requirements": [
     {
-      "id": "REQ-22",
-      "summary": "Prevent global startup loading/profile gating from blocking access to an interactive Login screen when actor/profile cannot be fetched.",
+      "id": "REQ-1",
+      "summary": "Show actionable actor/agent initialization diagnostics on login when connection fails, with Retry and Clear Cache actions.",
       "acceptanceCriteria": [
-        "If the backend actor is unavailable (null) or still initializing, the user can still see a usable Login screen UI (role selector and password input remain interactive; only the Login button may be disabled when appropriate).",
-        "If a stored password-auth session causes the app to attempt profile fetch but the profile query cannot run because the actor is not ready, the app must not lock the user into the global loading screen; it must offer a clear path back to login.",
-        "All user-facing messages involved in this flow are in English."
+        "When actor creation fails, the user sees a clear error state that includes the normalized error message and an expandable “Technical Details” section (similar to AppStartupError) rather than only a generic “Unable to connect to server”.",
+        "The error state provides working actions to Retry (re-attempt actor initialization) and Clear Cache (calls the existing resetCachedApp()).",
+        "The login screen no longer stays indefinitely in “Connecting to server...” without a visible error when the actor query fails."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Adjust startup gating so the app does not enter an indefinite full-screen \"Loading...\" state when password-auth is restored but the actor is unavailable/initializing (i.e., profile fetching is not yet possible). Ensure the LoginScreen can render in that scenario, with login inputs remaining usable and only the Login button disabled when the actor is not ready."
-        },
-        {
           "path": "frontend/src/screens/LoginScreen.tsx",
           "operation": "modify",
-          "description": "Ensure the Login screen remains fully interactive during actor initialization failures/stalls (keep role selector + password input enabled) and show clear English connection status messaging while keeping only the Login button disabled when the actor is not ready."
+          "description": "Render distinct UI states for actor initialization: connecting vs failed. When failed, show a visible error card that includes (1) a normalized error message (reuse normalizeAuthError), (2) an expandable 'Technical Details' section (raw error + query status metadata), and (3) working actions for Retry (trigger actor re-initialization) and Clear Cache (call resetCachedApp()). Ensure the previous 'Connecting to server...' alert is replaced/augmented so it cannot spin indefinitely when the underlying actor query is in an error state."
+        },
+        {
+          "path": "frontend/src/components/AppStartupError.tsx",
+          "operation": "modify",
+          "description": "Extend AppStartupError with an optional compact/embedded rendering mode suitable for use on the LoginScreen, while preserving existing full-page behavior. Keep the same 'Technical Details' expansion pattern to satisfy diagnostics UX consistency."
         }
       ]
     },
     {
-      "id": "REQ-23",
-      "summary": "Add visible recovery actions on startup timeout and profile-fetch error screens to clear password-auth state and return to Login without requiring a full reload.",
+      "id": "REQ-2",
+      "summary": "Surface actor initialization status and error to the app via a wrapper hook, enabling LoginScreen to render based on init state rather than mutation-thrown generic errors.",
       "acceptanceCriteria": [
-        "When the startup watchdog timeout screen is shown, there is a visible action (button) that clears the password-auth session and returns the UI to the Login screen.",
-        "When the app shows a profile fetch error state (the existing AppStartupError path), the user can choose an option that clears the password-auth session and returns to the Login screen.",
-        "Using the recovery action does not leave the app stuck in a loading/disabled state; login inputs remain usable immediately after returning to the Login screen.",
-        "All user-facing button labels and help text added/changed are in English."
+        "useActor returns enough state to distinguish: (a) still initializing, (b) initialized successfully, (c) failed with error.",
+        "LoginScreen can render different messaging for “connecting” vs “failed to connect”, based on the hook’s state, without relying on thrown 'Unable to connect to server' from mutations.",
+        "If actor initialization fails, the captured error is logged to console and is available for display in the UI diagnostics view."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/AppStartupError.tsx",
-          "operation": "modify",
-          "description": "Add an explicit recovery control (button) for non-auth startup failures and watchdog timeouts that can clear password-auth state and route the user back to Login (without relying only on a full page reload). Update error text rendering to use the existing auth error normalization approach (normalizeAuthError) to avoid exposing raw technical reject prefixes."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wire AppStartupError recovery actions for both watchdog timeout and profile-fetch error paths by providing a clearAuth/return-to-login handler (clearing password-auth state and any cached client state as appropriate) and ensuring the post-recovery UI shows an immediately usable Login screen."
+          "path": "frontend/src/hooks/useActorStatus.ts",
+          "operation": "create",
+          "description": "Create a new hook that composes the immutable useActor() and React Query's query cache to expose actor initialization state: { actor, status: 'initializing' | 'ready' | 'error', error, isFetching, retry() }. Derive error/status by reading the underlying actor query state from the QueryClient (using the same queryKey pattern used by useActor), and log initialization failures to console. This hook is the single source of truth for UI diagnostics."
         },
         {
           "path": "frontend/src/screens/LoginScreen.tsx",
           "operation": "modify",
-          "description": "Add a visible recovery action on the Login screen for stalled startup situations (e.g., a \"Clear Saved Session\" / \"Log out\" control) that clears password-auth state and immediately re-enables login inputs, without requiring manual cache clearing."
+          "description": "Switch actor readiness and messaging logic to use useActorStatus (or similarly named wrapper) so the screen can distinguish 'connecting' vs 'failed'. Ensure the displayed diagnostics view uses the hook-provided error and status rather than relying on mutation exceptions."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Update password-login mutations (useLoginAsOwner/useLoginAsSalesman) to avoid throwing a generic 'Unable to connect to server' when actor is null. Instead, consult the actor init state (via query cache state or the new useActorStatus hook) and throw an Error that reflects: (a) initializing (user-facing: still connecting) vs (b) failed (propagate the captured init error message). Keep console logging for unexpected failures so the UI can present diagnostics without masking root causes."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Prevent missing/empty caffeineAdminToken from blocking password-login actor creation by providing a safe fallback path and clear diagnostics when secret initialization fails.",
+      "acceptanceCriteria": [
+        "If the URL parameter `caffeineAdminToken` is absent or empty, the app does not fail actor initialization solely because of secret initialization; the app continues to load and allows password login attempts.",
+        "If secret initialization fails for any reason, the app still provides a clear error with diagnostics instead of silently leaving the actor null.",
+        "Owner and Salesman login mutations no longer fail with 'Unable to connect to server' when the only issue is missing admin token in the URL."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/screens/LoginScreen.tsx",
+          "operation": "modify",
+          "description": "In the actor-init failure UI, detect likely secret/admin-token related failures (based on error text and/or the absence of getSecretParameter('caffeineAdminToken')). Provide an additional recovery action: 'Continue without admin token' that clears any stored caffeineAdminToken (sessionStorage) and clears Internet Identity state (useInternetIdentity().clear()) to force a retry using an anonymous actor, enabling password login even when secret-based initialization fails. Also ensure that when secret initialization fails, the same diagnostics card (normalized error + Technical Details) is shown instead of leaving the actor null with only generic messaging."
+        },
+        {
+          "path": "frontend/src/hooks/useActorStatus.ts",
+          "operation": "modify",
+          "description": "Include minimal structured diagnostics for display (e.g., whether a caffeineAdminToken is present, current identity principal string if available, and the actor query status). This enables the LoginScreen 'Technical Details' section to clearly show when missing/empty token is the likely cause, and supports reliable retry behavior after clearing token/identity."
+        },
+        {
+          "path": "frontend/src/utils/urlParams.ts",
+          "operation": "modify",
+          "description": "Expose or add a small helper to explicitly clear the persisted secret/session parameter for `caffeineAdminToken` (without changing existing secret-handling behavior). This is used by the LoginScreen recovery action to remove stale/empty secret state before retrying actor initialization."
         }
       ]
     }

@@ -37,30 +37,18 @@ export function useSyncStatus() {
     for (const action of queue) {
       try {
         // Execute queued action based on type
+        // Note: Product, Customer, and Bill operations are local-only now
         switch (action.type) {
           case 'createProduct':
-            await actor.createProduct(action.payload);
-            break;
           case 'updateProduct':
-            await actor.updateProduct(action.payload);
-            break;
           case 'deleteProduct':
-            await actor.deleteProduct(action.payload);
-            break;
           case 'createCustomer':
-            await actor.createCustomer(action.payload);
-            break;
           case 'updateCustomer':
-            await actor.updateCustomer(action.payload);
-            break;
           case 'deleteCustomer':
-            await actor.deleteCustomer(action.payload);
-            break;
           case 'createBill':
-            await actor.createBill(action.payload);
-            break;
           case 'deleteBill':
-            await actor.deleteBill(action.payload);
+            // These are handled locally via localStorage in useQueries
+            // Just remove from queue
             break;
           case 'createExpense':
             await actor.createExpense(action.payload);

@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Ensure the Login screen is always reachable and usable during app startup, even when a previous password-auth session exists but actor/profile initialization stalls or fails.
+**Goal:** Replace the generic “Unable to connect to server” Owner/Salesman login failure with a clear, actionable error state that surfaces actor/agent initialization failures and provides recovery actions.
 
 **Planned changes:**
-- Adjust startup gating so the app does not remain indefinitely on the full-screen “Loading...” state when the backend actor is unavailable or still initializing; keep the Login UI reachable and interactive.
-- Add clear recovery actions on startup timeout and profile-fetch error states to clear password-auth state (logout/clearAuth) and return to the Login screen without requiring manual cache clearing or relying only on a full page reload.
-- Ensure any added/updated user-facing labels and help text in these flows are in English, and keep error/toast normalization consistent with existing patterns.
+- Update the login/startup flow to display the underlying actor/agent initialization error (when present), including an expandable “Technical Details” section, instead of only a generic connection message.
+- Add working user actions on the error state: Retry (re-attempt actor initialization) and Clear Cache (invoke the existing resetCachedApp()).
+- Adjust the actor initialization hook’s public state so the app can distinguish “initializing” vs “initialized” vs “failed with error”, and ensure failures are logged and available for UI diagnostics.
+- Make actor initialization resilient when the `caffeineAdminToken` URL parameter is missing/empty so anonymous actor creation for password login does not fail solely due to secret initialization.
 
-**User-visible outcome:** Users can always access and use the Login screen; if startup/profile loading stalls or fails, they can tap a visible recovery option to clear the stored session and immediately return to a usable Login screen.
+**User-visible outcome:** When connection/initialization fails during Owner/Salesman login, users see a clear error with technical details and can Retry or Clear Cache; the UI no longer hangs indefinitely on “Connecting to server...”, and missing admin token no longer causes a generic connection failure for password login.

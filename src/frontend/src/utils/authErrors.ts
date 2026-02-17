@@ -1,6 +1,7 @@
 /**
  * Normalizes backend authorization errors into user-friendly English messages.
- * Strips stack traces and technical prefixes while preserving the core reason.
+ * Strips stack traces, technical prefixes, and replica/canister rejection wrappers
+ * while preserving the core reason.
  */
 export function normalizeAuthError(error: unknown): string {
   if (!error) {
@@ -22,6 +23,7 @@ export function normalizeAuthError(error: unknown): string {
 
   // Strip common technical prefixes while preserving the core message
   // Order matters: strip outer wrappers first, then inner ones
+  // Added more comprehensive replica/canister rejection patterns
   message = message
     .replace(/^Error:\s*/i, '')
     .replace(/^Reject text:\s*/i, '')
@@ -35,6 +37,10 @@ export function normalizeAuthError(error: unknown): string {
     .replace(/^Call failed:\s*/i, '')
     .replace(/^Canister rejected the message:\s*/i, '')
     .replace(/^The replica returned an error:\s*/i, '')
+    .replace(/^Canister:\s*/i, '')
+    .replace(/^Replica:\s*/i, '')
+    .replace(/^Reject message:\s*/i, '')
+    .replace(/^Rejection:\s*/i, '')
     .trim();
 
   // Remove stack traces (everything after newline)
@@ -43,9 +49,19 @@ export function normalizeAuthError(error: unknown): string {
     message = firstLine;
   }
 
-  // If it's an authorization error, ensure it's clear
+  // If it's an authorization error, make it more user-friendly
   if (message.toLowerCase().includes('unauthorized')) {
-    // Keep the original message as it's already user-friendly
+    // Check for specific authorization scenarios
+    if (message.includes('Only admins can assign user roles')) {
+      return 'Access denied. Please contact the system administrator.';
+    }
+    if (message.includes('Only admins can perform this action')) {
+      return 'This action requires administrator privileges.';
+    }
+    if (message.includes('Only users can perform this action')) {
+      return 'You must be logged in to perform this action.';
+    }
+    // Keep other unauthorized messages as-is (they're already clear)
     return message;
   }
 
@@ -53,6 +69,18 @@ export function normalizeAuthError(error: unknown): string {
   if (message.toLowerCase().includes('actor not available') || 
       message.toLowerCase().includes('unable to connect')) {
     return 'Unable to connect to the server. Please wait a moment and try again.';
+  }
+
+  // If it's about authentication failure or wrong password
+  if (message.toLowerCase().includes('authentication failed') || 
+      message.toLowerCase().includes('wrong password') ||
+      message.toLowerCase().includes('incorrect password')) {
+    return 'Incorrect password. Please verify you selected the correct role and use the password provided by the administrator.';
+  }
+
+  // If it's about anonymous principals
+  if (message.toLowerCase().includes('anonymous principal')) {
+    return 'Anonymous login is not supported. Please use a valid account.';
   }
 
   // If message is empty or too technical, provide a fallback

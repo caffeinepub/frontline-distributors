@@ -29,7 +29,8 @@ export function PasswordAuthProvider({ children }: { children: ReactNode }) {
       const stored = localStorage.getItem(AUTH_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.isAuthenticated && parsed.role) {
+        // Only restore if we have both authentication flag and a valid role
+        if (parsed.isAuthenticated && parsed.role && (parsed.role === 'owner' || parsed.role === 'salesman')) {
           setState({
             isAuthenticated: true,
             role: parsed.role,
@@ -41,6 +42,8 @@ export function PasswordAuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Failed to restore auth state:', error);
     }
+    // If restoration failed or no valid session, clear any stale data
+    localStorage.removeItem(AUTH_STORAGE_KEY);
     setState(prev => ({ ...prev, isInitializing: false }));
   }, []);
 
@@ -65,7 +68,15 @@ export function PasswordAuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Alias for clearing auth state (same as logout but more explicit for error handling)
-  const clearAuth = logout;
+  const clearAuth = () => {
+    logout();
+    // Also clear any stale persisted state
+    try {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch (error) {
+      console.error('Failed to clear auth storage:', error);
+    }
+  };
 
   return (
     <PasswordAuthContext.Provider value={{ ...state, login, logout, clearAuth }}>

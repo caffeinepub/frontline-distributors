@@ -2,30 +2,9 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-ensure-the-application-always-allows-the-user-to-reach-and-use-the-login-screen-even-if-a-previous-session-left-isauthenticated-true-in-localstorage-and-the-backend-actor-user-profile-cannot-be-fetched-e-g-actor-initialization-stalls-or-fails-the-app-must-not-remain-indefinitely-on-the-full-screen-loading-state-in-a-way-that-prevents-login-interaction",
-      "featureTitle": "Ensure the application always allows the user to reach and use the Login screen, even if a previous session left `isAuthenticated=true` in localStorage and the backend actor/user profile cannot be fetched (e.g., actor initialization stalls or fails). The app must not remain indefinitely on the full-screen \"Loading...\" state in a way that prevents login interaction.",
+      "featureId": "feature-add-actionable-diagnostics-to-the-login-startup-flow-so-that-when-the-app-shows-unable-to-connect-to-server-the-ui-also-displays-the-underlying-actor-agent-initialization-error-if-any-and-provides-retry-actions",
+      "featureTitle": "Add actionable diagnostics to the login/startup flow so that when the app shows “Unable to connect to server”, the UI also displays the underlying actor/agent initialization error (if any) and provides retry actions.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/screens/LoginScreen.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-22"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-a-clear-recovery-action-whenever-startup-profile-loading-fails-or-stalls-that-lets-the-user-return-to-login-by-clearing-password-auth-state-logout-clearauth-without-requiring-manual-cache-clearing-this-recovery-action-must-be-visible-on-the-relevant-error-timeout-ui-and-must-not-rely-only-on-a-full-page-reload",
-      "featureTitle": "Add a clear recovery action whenever startup/profile loading fails or stalls that lets the user return to Login by clearing password-auth state (logout/clearAuth) without requiring manual cache clearing. This recovery action must be visible on the relevant error/timeout UI and must not rely only on a full page reload.",
-      "files": [
-        "frontend/src/App.tsx",
         "frontend/src/components/AppStartupError.tsx",
         "frontend/src/screens/LoginScreen.tsx"
       ],
@@ -38,7 +17,48 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-23"
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-actor-initialization-hook-to-surface-failures-error-status-to-the-rest-of-the-app-instead-of-returning-only-a-null-actor-and-causing-downstream-code-to-emit-a-generic-connection-error",
+      "featureTitle": "Update the actor initialization hook to surface failures (error + status) to the rest of the app, instead of returning only a null actor and causing downstream code to emit a generic connection error.",
+      "files": [
+        "frontend/src/hooks/useActorStatus.ts",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/screens/LoginScreen.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-make-actor-initialization-resilient-to-missing-empty-admin-secret-parameter-so-that-the-anonymous-actor-can-still-be-created-and-used-for-password-login-without-failing-due-to-secret-based-access-control-initialization",
+      "featureTitle": "Make actor initialization resilient to missing/empty admin secret parameter so that the anonymous actor can still be created and used for password login without failing due to secret-based access-control initialization.",
+      "files": [
+        "frontend/src/hooks/useActorStatus.ts",
+        "frontend/src/screens/LoginScreen.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
       ],
       "confidence": "high"
     }

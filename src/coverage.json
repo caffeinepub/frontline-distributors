@@ -1,41 +1,55 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-16T12:57:26.516Z",
+  "generatedAt": "2026-02-17T08:57:49.874Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-22",
-        "summary": "Ensure the application always allows the user to reach and use the Login screen, even if a previous session left `isAuthenticated=true` in localStorage and the backend actor/user profile cannot be fetched (e.g., actor initialization stalls or fails). The app must not remain indefinitely on the full-screen \"Loading...\" state in a way that prevents login interaction.",
+        "id": "REQ-1",
+        "summary": "Add actionable diagnostics to the login/startup flow so that when the app shows “Unable to connect to server”, the UI also displays the underlying actor/agent initialization error (if any) and provides retry actions.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/screens/LoginScreen.tsx"
+          "frontend/src/screens/LoginScreen.tsx",
+          "frontend/src/components/AppStartupError.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/screens/LoginScreen.tsx"
+          "frontend/src/screens/LoginScreen.tsx",
+          "frontend/src/components/AppStartupError.tsx"
         ]
       },
       {
-        "id": "REQ-23",
-        "summary": "Add a clear recovery action whenever startup/profile loading fails or stalls that lets the user return to Login by clearing password-auth state (logout/clearAuth) without requiring manual cache clearing. This recovery action must be visible on the relevant error/timeout UI and must not rely only on a full page reload.",
+        "id": "REQ-2",
+        "summary": "Update the actor initialization hook to surface failures (error + status) to the rest of the app, instead of returning only a null actor and causing downstream code to emit a generic connection error.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/AppStartupError.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/screens/LoginScreen.tsx"
+          "frontend/src/hooks/useActorStatus.ts",
+          "frontend/src/screens/LoginScreen.tsx",
+          "frontend/src/hooks/useQueries.ts"
         ],
         "matchedFiles": [
-          "frontend/src/components/AppStartupError.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/screens/LoginScreen.tsx"
+          "frontend/src/hooks/useActorStatus.ts",
+          "frontend/src/screens/LoginScreen.tsx",
+          "frontend/src/hooks/useQueries.ts"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Make actor initialization resilient to missing/empty admin secret parameter so that the anonymous actor can still be created and used for password login without failing due to secret-based access-control initialization.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/screens/LoginScreen.tsx",
+          "frontend/src/hooks/useActorStatus.ts",
+          "frontend/src/utils/urlParams.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/screens/LoginScreen.tsx",
+          "frontend/src/hooks/useActorStatus.ts"
         ]
       }
     ]
@@ -45,8 +59,10 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
     "frontend/src/components/AppStartupError.tsx",
+    "frontend/src/hooks/useActorStatus.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/offline/useOfflineQueue.ts",
     "frontend/src/screens/LoginScreen.tsx",
     "project_state.json",
     "scratch/component-selection.json",

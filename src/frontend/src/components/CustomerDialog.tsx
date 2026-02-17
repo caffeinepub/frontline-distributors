@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { Customer } from '../backend';
+import type { Customer } from '../types/local';
 import { toast } from 'sonner';
 
 interface CustomerDialogProps {
@@ -22,26 +22,26 @@ export default function CustomerDialog({ open, onOpenChange, customer }: Custome
   const { queueAction } = useOfflineQueue();
 
   const [name, setName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
   const [address, setAddress] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   useEffect(() => {
     if (customer) {
       setName(customer.name);
-      setPhoneNumber(customer.phoneNumber);
       setAddress(customer.address);
+      setPhoneNumber(customer.phoneNumber);
     } else {
       setName('');
-      setPhoneNumber('');
       setAddress('');
+      setPhoneNumber('');
     }
   }, [customer, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim() || !phoneNumber.trim()) {
-      toast.error('Please fill in name and phone number');
+    if (!name.trim()) {
+      toast.error('Please enter customer name');
       return;
     }
 
@@ -51,8 +51,8 @@ export default function CustomerDialog({ open, onOpenChange, customer }: Custome
         const updatedCustomer: Customer = {
           ...customer,
           name: name.trim(),
-          phoneNumber: phoneNumber.trim(),
           address: address.trim(),
+          phoneNumber: phoneNumber.trim(),
         };
 
         await queueAction({
@@ -72,8 +72,8 @@ export default function CustomerDialog({ open, onOpenChange, customer }: Custome
         const newCustomer: Customer = {
           id: BigInt(maxId + 1),
           name: name.trim(),
-          phoneNumber: phoneNumber.trim(),
           address: address.trim(),
+          phoneNumber: phoneNumber.trim(),
         };
 
         await queueAction({
@@ -109,15 +109,6 @@ export default function CustomerDialog({ open, onOpenChange, customer }: Custome
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
-            <Input
-              id="phone"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="Enter phone number"
-            />
-          </div>
-          <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
             <Textarea
               id="address"
@@ -125,6 +116,16 @@ export default function CustomerDialog({ open, onOpenChange, customer }: Custome
               onChange={(e) => setAddress(e.target.value)}
               placeholder="Enter address"
               rows={3}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone Number</Label>
+            <Input
+              id="phone"
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              placeholder="Enter phone number"
             />
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">

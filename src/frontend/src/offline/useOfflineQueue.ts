@@ -4,7 +4,7 @@ import { addToQueue, getQueue } from './storage';
 interface QueueActionParams {
   type: string;
   payload: any;
-  execute: () => Promise<void>;
+  execute: () => Promise<any>;
 }
 
 // Hook for queuing offline actions

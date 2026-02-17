@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Trash2, Printer } from 'lucide-react';
-import type { Product, Bill } from '../backend';
+import type { Product, Bill } from '../types/local';
 import { toast } from 'sonner';
 import { calculateBillingTotals, calculateBillTotal } from '../utils/billingTotals';
 import { printInvoice } from '../utils/printInvoice';
@@ -355,7 +355,7 @@ export default function BillingScreen() {
                         <span>Credit:</span>
                         <span>₹{creditAmt.toLocaleString()}</span>
                       </div>
-                      <div className="flex justify-between font-semibold">
+                      <div className="flex justify-between font-semibold text-base text-primary">
                         <span>Amount Due:</span>
                         <span>₹{Math.max(0, totals.finalTotal - creditAmt).toLocaleString()}</span>
                       </div>
@@ -378,38 +378,43 @@ export default function BillingScreen() {
           </CardHeader>
           <CardContent>
             {recentBills.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground">
+              <p className="text-sm text-muted-foreground text-center py-8">
                 No bills created yet
-              </div>
+              </p>
             ) : (
               <div className="space-y-3">
                 {recentBills.map((bill) => {
                   const customer = customers.find(c => c.id === bill.customerId);
-                  const total = calculateBillTotal(bill);
+                  const billTotal = calculateBillTotal(bill);
                   
                   return (
                     <div
                       key={bill.id.toString()}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 border rounded-lg"
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{customer?.name || 'Unknown'}</p>
+                        <p className="font-medium truncate">
+                          {customer?.name || 'Unknown Customer'}
+                        </p>
                         <p className="text-sm text-muted-foreground">
                           {new Date(Number(bill.timestamp)).toLocaleDateString()}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold whitespace-nowrap">
-                          ₹{total.toLocaleString()}
-                        </span>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <p className="font-semibold">₹{billTotal.toLocaleString()}</p>
+                          {Number(bill.creditAmount) > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              Credit: ₹{Number(bill.creditAmount).toLocaleString()}
+                            </p>
+                          )}
+                        </div>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
-                          onClick={() => customer && printInvoice(bill, customer)}
-                          className="gap-2"
+                          onClick={() => printInvoice(bill, customer || { id: bill.customerId, name: 'Unknown', address: '', phoneNumber: '' })}
                         >
                           <Printer className="h-4 w-4" />
-                          <span className="hidden sm:inline">Print</span>
                         </Button>
                       </div>
                     </div>

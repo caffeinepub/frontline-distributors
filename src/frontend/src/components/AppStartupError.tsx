@@ -1,117 +1,153 @@
-import { AlertCircle, RefreshCw, AlertTriangle, LogOut, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { resetCachedApp } from '@/utils/resetCachedApp';
-import { normalizeAuthError } from '@/utils/authErrors';
-import type { StartupDiagnostics } from '@/hooks/useStartupWatchdog';
+import { AlertCircle, RefreshCw, Trash2, LogOut } from 'lucide-react';
+import { normalizeAuthError } from '../utils/authErrors';
+import { resetCachedApp } from '../utils/resetCachedApp';
 
 interface AppStartupErrorProps {
-  error: Error | unknown;
+  error: Error;
   onRetry: () => void;
   onClearAuth?: () => void;
-  diagnostics?: StartupDiagnostics | null;
+  diagnostics?: Record<string, any>;
   isWatchdogTimeout?: boolean;
+  compact?: boolean;
 }
 
-export default function AppStartupError({ 
-  error, 
-  onRetry, 
+export default function AppStartupError({
+  error,
+  onRetry,
   onClearAuth,
   diagnostics,
-  isWatchdogTimeout = false 
+  isWatchdogTimeout = false,
+  compact = false,
 }: AppStartupErrorProps) {
-  const rawErrorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-  const errorMessage = normalizeAuthError(rawErrorMessage);
-  
-  // Check if this is an authorization error
-  const isAuthError = rawErrorMessage.includes('Unauthorized') || 
-                      rawErrorMessage.includes('Only admins') || 
-                      rawErrorMessage.includes('Only users');
-  
-  const handleResetCache = async () => {
+  const normalizedError = normalizeAuthError(error);
+  const isAuthError = normalizedError.toLowerCase().includes('unauthorized') ||
+                      normalizedError.toLowerCase().includes('access denied') ||
+                      normalizedError.toLowerCase().includes('permission') ||
+                      normalizedError.toLowerCase().includes('admin');
+
+  const handleClearCachesAndReload = async () => {
     await resetCachedApp();
   };
 
-  const handleClearAuthAndReturnToLogin = () => {
+  const handleClearSessionAndReturnToLogin = () => {
     if (onClearAuth) {
       onClearAuth();
     }
   };
 
-  return (
-    <div className="flex h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="rounded-full bg-destructive/10 p-3">
-              {isWatchdogTimeout ? (
-                <AlertTriangle className="h-6 w-6 text-destructive" />
-              ) : (
-                <AlertCircle className="h-6 w-6 text-destructive" />
-              )}
-            </div>
-            <div>
-              <CardTitle className="text-xl">
-                {isWatchdogTimeout ? 'Startup Timeout' : isAuthError ? 'Access Denied' : 'Startup Error'}
-              </CardTitle>
-              <CardDescription>
-                {isWatchdogTimeout 
-                  ? 'The application took too long to start'
-                  : isAuthError 
-                  ? 'You do not have permission to access this application'
-                  : 'An error occurred during startup'}
-              </CardDescription>
-            </div>
+  if (compact) {
+    // Compact mode for embedding in other screens (e.g., LoginScreen)
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription className="space-y-2">
+          <div className="font-medium">
+            {isWatchdogTimeout ? 'Startup Timeout' : isAuthError ? 'Access Denied' : 'Connection Error'}
           </div>
+          <div className="text-sm">{normalizedError}</div>
+          
+          {diagnostics && (
+            <details className="mt-2 text-xs">
+              <summary className="cursor-pointer hover:underline">
+                Technical Details
+              </summary>
+              <pre className="mt-2 overflow-auto whitespace-pre-wrap break-words bg-muted/50 p-2 rounded">
+                {JSON.stringify(diagnostics, null, 2)}
+              </pre>
+            </details>
+          )}
+          
+          <div className="flex gap-2 mt-3">
+            <Button size="sm" onClick={onRetry} variant="outline">
+              <RefreshCw className="mr-2 h-3 w-3" />
+              Retry
+            </Button>
+            <Button size="sm" onClick={handleClearCachesAndReload} variant="outline">
+              <Trash2 className="mr-2 h-3 w-3" />
+              Clear Cache
+            </Button>
+          </div>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  // Full-page mode (original behavior)
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-4">
+      <Card className="w-full max-w-2xl shadow-lg">
+        <CardHeader className="space-y-1">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-6 w-6 text-destructive" />
+            <CardTitle className="text-2xl font-bold">
+              {isWatchdogTimeout ? 'Startup Timeout' : isAuthError ? 'Access Denied' : 'Startup Error'}
+            </CardTitle>
+          </div>
+          <CardDescription>
+            {isWatchdogTimeout
+              ? 'The application took too long to start. This might be a temporary issue.'
+              : isAuthError
+              ? 'You do not have permission to access this application.'
+              : 'An error occurred while starting the application.'}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Alert variant={isAuthError ? "destructive" : "default"}>
-            <AlertDescription className="text-sm">
-              {errorMessage}
+          <Alert variant="destructive">
+            <AlertDescription className="text-sm break-words">
+              {normalizedError}
             </AlertDescription>
           </Alert>
 
           {isAuthError && (
             <Alert>
               <AlertDescription className="text-sm">
-                This application requires admin or user privileges. Please contact the application owner if you believe you should have access.
+                If you believe you should have access, please contact the application administrator.
+                You can also try clearing your session and logging in again.
               </AlertDescription>
             </Alert>
           )}
 
-          {isWatchdogTimeout && diagnostics && (
-            <div className="rounded-lg bg-muted p-3 text-xs space-y-1">
-              <p className="font-semibold text-muted-foreground">Diagnostic Information:</p>
-              <p><span className="font-medium">Phase:</span> {diagnostics.phase}</p>
-              <p><span className="font-medium">Authenticated:</span> {diagnostics.isAuthenticated ? 'Yes' : 'No'}</p>
-              <p><span className="font-medium">Profile Fetched:</span> {diagnostics.isFetched ? 'Yes' : 'No'}</p>
-              <p><span className="font-medium">Profile Loading:</span> {diagnostics.profileLoading ? 'Yes' : 'No'}</p>
+          {diagnostics && (
+            <details className="rounded-md border p-3 text-xs">
+              <summary className="cursor-pointer font-medium text-muted-foreground hover:text-foreground">
+                Technical Details
+              </summary>
+              <pre className="mt-2 overflow-auto whitespace-pre-wrap break-words text-xs">
+                {JSON.stringify(diagnostics, null, 2)}
+              </pre>
+            </details>
+          )}
+
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <Button onClick={onRetry} className="flex-1">
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Retry
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleClearCachesAndReload}
+                className="flex-1"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Clear Cache
+              </Button>
             </div>
-          )}
-        </CardContent>
-        <CardFooter className="flex flex-col gap-2">
-          <div className="flex w-full gap-2">
-            <Button onClick={onRetry} className="flex-1">
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Retry
-            </Button>
-            <Button onClick={handleResetCache} variant="outline" className="flex-1">
-              <Trash2 className="mr-2 h-4 w-4" />
-              Clear Cache
-            </Button>
+            {onClearAuth && (
+              <Button
+                variant="outline"
+                onClick={handleClearSessionAndReturnToLogin}
+                className="w-full"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Clear Session & Return to Login
+              </Button>
+            )}
           </div>
-          {onClearAuth && (
-            <Button 
-              onClick={handleClearAuthAndReturnToLogin} 
-              variant="secondary" 
-              className="w-full"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Clear Session & Return to Login
-            </Button>
-          )}
-        </CardFooter>
+        </CardContent>
       </Card>
     </div>
   );
